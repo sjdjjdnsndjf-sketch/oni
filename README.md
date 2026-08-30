@@ -42,7 +42,7 @@ end
 
 -- ============================================================
 local introSoundInstance = nil
-local ONI_INTRO_URL = "https://litter.catbox.moe/em9tgo7cqc5acj8u.mp3"
+local ONI_INTRO_URL = "https://files.catbox.moe/1c9svv.mp3"
 local ONI_INTRO_FILE = "oni_intro.mp3"
 
 local function playOniIntroSound()
