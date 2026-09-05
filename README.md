@@ -1,7 +1,5 @@
-loadstring(game:HttpGet("https://pastefy.app/cTuNnDnz/raw"))()
-loadstring(game:HttpGet("https://pastefy.app/8clt1HMJ/raw"))()
-loadstring(game:HttpGet("https://pastefy.app/sUr6CJsA/raw"))()
-
+loadstring(game:HttpGet("https://pastefy.app/o7Y1Pscn/raw"))()
+loadstring(game:HttpGet("https://pastefy.app/CUCwldcy/raw"))()
 local Players = game:GetService("Players")
 
 local TweenService = game:GetService("TweenService")
