@@ -1,4 +1,6 @@
-loadstring(game:HttpGet("https://pastefy.app/jCBfLs2D/raw"))()
+loadstring(game:HttpGet("https://pastefy.app/cTuNnDnz/raw"))()
+loadstring(game:HttpGet("https://pastefy.app/8clt1HMJ/raw"))()
+loadstring(game:HttpGet("https://pastefy.app/sUr6CJsA/raw"))()
 
 local Players = game:GetService("Players")
 
@@ -11,6 +13,112 @@ local player = Players.LocalPlayer
 
 -- Master table
 local M = {}
+
+-- ============================================================
+-- FREEZE PLAYER
+-- Mantém os outros jogadores parados sem criar conexões duplicadas.
+M.freezePlayerEnabled = false
+M._freezePlayerConnection = nil
+M.noCollisionEnabled = true
+M._noCollisionConnection = nil
+M._noCollisionOriginals = {}
+M._freezePlayerOriginals = {}
+M._freezePlayerPartOriginals = {}
+
+local function disconnectFreezePlayer()
+    if M._freezePlayerConnection then
+        pcall(function() M._freezePlayerConnection:Disconnect() end)
+        M._freezePlayerConnection = nil
+    end
+end
+
+local function restoreFreezePlayer()
+    for humanoid, values in pairs(M._freezePlayerOriginals) do
+        if humanoid and humanoid.Parent then
+            pcall(function()
+                humanoid.WalkSpeed = values.WalkSpeed
+                if values.JumpPower ~= nil then humanoid.JumpPower = values.JumpPower end
+                if values.JumpHeight ~= nil then humanoid.JumpHeight = values.JumpHeight end
+                humanoid.AutoRotate = values.AutoRotate
+            end)
+        end
+    end
+    for part, canCollide in pairs(M._freezePlayerPartOriginals) do
+        if part and part.Parent then
+            pcall(function() part.CanCollide = canCollide end)
+        end
+    end
+    M._freezePlayerOriginals = {}
+    M._freezePlayerPartOriginals = {}
+end
+
+function M.toggleFreezePlayer(isEnabled)
+    if isEnabled == nil then
+        isEnabled = not M.freezePlayerEnabled
+    end
+    isEnabled = isEnabled == true
+
+    disconnectFreezePlayer()
+    if not isEnabled then
+        M.freezePlayerEnabled = false
+        restoreFreezePlayer()
+        return false
+    end
+
+    M.freezePlayerEnabled = true
+    M._freezePlayerOriginals = {}
+    M._freezePlayerPartOriginals = {}
+
+    M._freezePlayerConnection = RunService.Stepped:Connect(function()
+        if not M.freezePlayerEnabled then
+            disconnectFreezePlayer()
+            return
+        end
+
+        for _, targetPlayer in ipairs(Players:GetPlayers()) do
+            if targetPlayer ~= player then
+                local character = targetPlayer.Character
+                if character then
+                    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+                    if humanoid then
+                        if not M._freezePlayerOriginals[humanoid] then
+                            M._freezePlayerOriginals[humanoid] = {
+                                WalkSpeed = humanoid.WalkSpeed,
+                                JumpPower = humanoid.JumpPower,
+                                JumpHeight = humanoid.JumpHeight,
+                                AutoRotate = humanoid.AutoRotate,
+                            }
+                        end
+                        pcall(function()
+                            humanoid.WalkSpeed = 0
+                            humanoid.JumpPower = 0
+                            humanoid.JumpHeight = 0
+                            humanoid.AutoRotate = false
+                        end)
+                    end
+
+                    for _, object in ipairs(character:GetDescendants()) do
+                        if object:IsA("BasePart") then
+                            if M._freezePlayerPartOriginals[object] == nil then
+                                M._freezePlayerPartOriginals[object] = object.CanCollide
+                            end
+                            pcall(function() object.CanCollide = false end)
+                        end
+                    end
+                end
+            end
+        end
+    end)
+
+    return true
+end
+
+function M.stopFreezePlayer()
+    return M.toggleFreezePlayer(false)
+end
+
+-- Alias compatível com o nome do trecho fornecido.
+M.toggleFreeze = M.toggleFreezePlayer
 
 -- ------------------------------------------------------------
 -- EARLY CONFIG LOAD
@@ -42,7 +150,7 @@ end
 
 -- ============================================================
 local introSoundInstance = nil
-local ONI_INTRO_URL = "https://files.catbox.moe/1c9svv.mp3"
+local ONI_INTRO_URL = "https://files.catbox.moe/289j4k.wav"
 local ONI_INTRO_FILE = "oni_intro.mp3"
 
 local function playOniIntroSound()
@@ -1621,7 +1729,7 @@ M._laggerPreviousMode = nil
 
 M.antiRagdollEnabled = false
 M.antiRagdollMode = "Splatter"
-M.infJumpEnabled = false
+M.infJumpEnabled = true
 M.infJumpMode = "manual"
 M.medusaCounterEnabled = false
 M.batCounterEnabled = false
@@ -2487,6 +2595,168 @@ function M.buildStatusUI()
     M.statusHolder = main
     M.statusBarPctLbl = pctLbl
     M.statusStealLbl = stealTxt
+    M.statusRadiusLbl = nil
+end
+
+function M.buildMiroAutoStealUI()
+    if M.statusGui then pcall(function() M.statusGui:Destroy() end) end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "K7_StatusUI"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local parent = player:FindFirstChild("PlayerGui")
+    if gethui then pcall(function() parent = gethui() end) end
+    gui.Parent = parent or player:WaitForChild("PlayerGui")
+
+    local accent = UI_ACCENT or Color3.fromRGB(45, 136, 255)
+    local main = Instance.new("Frame")
+    main.Name = "oniAutoSteal"
+    main.Active = true
+    main.AnchorPoint = Vector2.new(0.5, 1)
+    main.Position = UDim2.new(0.5, 0, 1, -100)
+    main.Size = UDim2.fromOffset(340, 58)
+    main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    main.BorderSizePixel = 0
+    main.Parent = gui
+    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+    local scale = Instance.new("UIScale", main)
+    scale.Scale = M.stealBarScale or 0.3
+    M.stealBarScaleRef = scale
+
+    local title = Instance.new("TextLabel", main)
+    title.BackgroundTransparency = 1
+    title.Position = UDim2.fromOffset(12, 6)
+    title.Size = UDim2.fromOffset(110, 18)
+    title.Text = "ONI Auto Steal"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 12
+    title.Font = Enum.Font.GothamBold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.ZIndex = 3
+
+    local pct = Instance.new("TextLabel", main)
+    pct.BackgroundTransparency = 1
+    pct.Position = UDim2.fromOffset(120, 5)
+    pct.Size = UDim2.fromOffset(40, 18)
+    pct.Text = "0%"
+    pct.TextColor3 = Color3.fromRGB(255, 255, 255)
+    pct.TextSize = 14
+    pct.Font = Enum.Font.GothamBlack
+    pct.ZIndex = 6
+    M.statusPctLbl = pct
+    M.statusBarPctLbl = pct
+
+    local colors = {
+        Color3.fromRGB(160, 50, 255), Color3.fromRGB(45, 136, 255),
+        Color3.fromRGB(255, 50, 50), Color3.fromRGB(90, 90, 100),
+        Color3.fromRGB(255, 255, 255),
+    }
+    for i, color in ipairs(colors) do
+        local b = Instance.new("TextButton", main)
+        b.Position = UDim2.fromOffset(216 + (i - 1) * 14, 9)
+        b.Size = UDim2.fromOffset(11, 11)
+        b.BackgroundColor3 = color
+        b.Text = ""
+        b.ZIndex = 5
+        Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
+        b.MouseButton1Click:Connect(function()
+            if M.statusFill then M.statusFill.BackgroundColor3 = color end
+        end)
+    end
+
+    local function smallButton(text, x)
+        local b = Instance.new("TextButton", main)
+        b.Position = UDim2.new(1, x, 0, 7)
+        b.Size = UDim2.fromOffset(14, 14)
+        b.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+        b.Text = text
+        b.TextColor3 = Color3.fromRGB(255, 255, 255)
+        b.Font = Enum.Font.GothamBold
+        b.TextSize = 10
+        b.ZIndex = 5
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+        return b
+    end
+    local plus = smallButton("+", -40)
+    local minus = smallButton("-", -22)
+    local lock = smallButton("🔒", -58)
+    local locked = true
+    lock.MouseButton1Click:Connect(function()
+        locked = not locked
+        M.uiLocked = locked
+        lock.Text = locked and "🔒" or "🔓"
+    end)
+    plus.MouseButton1Click:Connect(function() M.adjustAutoGrabGuiScale(0.1) end)
+    minus.MouseButton1Click:Connect(function() M.adjustAutoGrabGuiScale(-0.1) end)
+
+    local barBg = Instance.new("Frame", main)
+    barBg.Position = UDim2.fromOffset(12, 28)
+    barBg.Size = UDim2.new(1, -24, 0, 10)
+    barBg.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
+    barBg.BorderSizePixel = 0
+    barBg.ClipsDescendants = true
+    barBg.ZIndex = 3
+    Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+    local fill = Instance.new("Frame", barBg)
+    fill.Size = UDim2.new(0, 0, 1, 0)
+    fill.BackgroundColor3 = accent
+    fill.BorderSizePixel = 0
+    fill.ZIndex = 4
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    M.statusFill = fill
+    M.statusKnob = nil
+
+    local status = Instance.new("TextLabel", main)
+    status.BackgroundTransparency = 1
+    status.Position = UDim2.fromOffset(12, 40)
+    status.Size = UDim2.new(1, -24, 0, 14)
+    status.Text = "discord.gg/miroduels | Ping: -- | FPS: --"
+    status.TextColor3 = Color3.fromRGB(150, 150, 160)
+    status.Font = Enum.Font.Gotham
+    status.TextSize = 11
+    status.TextXAlignment = Enum.TextXAlignment.Left
+    status.ZIndex = 3
+    -- A porcentagem fica no rótulo próprio; o status inferior permanece com Ping/FPS.
+    M.statusStealLbl = nil
+
+    local dragging, dragStart, startPos
+    main.InputBegan:Connect(function(input)
+        if locked then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = main.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and not locked and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
+
+    if M._statusFpsConn then pcall(function() M._statusFpsConn:Disconnect() end) end
+    local frames, elapsed = 0, 0
+    M._statusFpsConn = RunService.RenderStepped:Connect(function(dt)
+        if not main.Parent then return end
+        frames += 1
+        elapsed += dt
+        if elapsed >= 0.5 then
+            local fps = math.floor(frames / elapsed + 0.5)
+            frames, elapsed = 0, 0
+            local ping = 0
+            pcall(function() ping = math.floor(player:GetNetworkPing() * 1000 + 0.5) end)
+            status.Text = string.format("discord.gg/miroduels | Ping: %dms | FPS: %d", ping, fps)
+        end
+    end)
+    M.statusGui = gui
+    M.statusMain = main
+    M.statusHolder = main
+    M.statusFpsLbl = nil
     M.statusRadiusLbl = nil
 end
 
@@ -3677,6 +3947,80 @@ function M.getNormalAimbotSpeed()
     return tonumber(M.aimbotSpeed) or 58
 end
 
+-- Anti-Die compartilhado pelos dois modos de TP Bat, com uma única rotina ativa.
+M._tpAntiDieEnabled = false
+M._tpAntiDieHealthConn = nil
+M._tpAntiDieStateConn = nil
+M._tpAntiDieHeartbeat = nil
+M._tpAntiDieCharConn = nil
+M._tpAntiDieSaved = nil
+
+function M.startTpAntiDie()
+    if M._tpAntiDieEnabled then return end
+    M._tpAntiDieEnabled = true
+
+    local function protect(char)
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if not hum then return end
+        M._tpAntiDieSaved = {
+            humanoid = hum,
+            maxHealth = hum.MaxHealth,
+            health = hum.Health,
+            deadEnabled = hum:GetStateEnabled(Enum.HumanoidStateType.Dead),
+        }
+        pcall(function()
+            hum.MaxHealth = math.huge
+            hum.Health = hum.MaxHealth
+            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        end)
+        if M._tpAntiDieHealthConn then M._tpAntiDieHealthConn:Disconnect() end
+        if M._tpAntiDieStateConn then M._tpAntiDieStateConn:Disconnect() end
+        M._tpAntiDieStateConn = hum.StateChanged:Connect(function(_, state)
+            if M._tpAntiDieEnabled and state == Enum.HumanoidStateType.Dead then
+                pcall(function() hum.Health = hum.MaxHealth end)
+            end
+        end)
+        M._tpAntiDieHealthConn = hum:GetPropertyChangedSignal("Health"):Connect(function()
+            if M._tpAntiDieEnabled and hum.Parent and hum.Health < hum.MaxHealth then
+                pcall(function() hum.Health = hum.MaxHealth end)
+            end
+        end)
+    end
+
+    protect(player.Character)
+    if M._tpAntiDieCharConn then M._tpAntiDieCharConn:Disconnect() end
+    M._tpAntiDieCharConn = player.CharacterAdded:Connect(function(char)
+        if not M._tpAntiDieEnabled then return end
+        task.wait(0.1)
+        protect(char)
+    end)
+    M._tpAntiDieHeartbeat = RunService.Heartbeat:Connect(function()
+        if not M._tpAntiDieEnabled then return end
+        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Parent and hum.Health < hum.MaxHealth then
+            pcall(function() hum.Health = hum.MaxHealth end)
+        end
+    end)
+end
+
+function M.stopTpAntiDie()
+    M._tpAntiDieEnabled = false
+    if M._tpAntiDieHealthConn then M._tpAntiDieHealthConn:Disconnect(); M._tpAntiDieHealthConn = nil end
+    if M._tpAntiDieStateConn then M._tpAntiDieStateConn:Disconnect(); M._tpAntiDieStateConn = nil end
+    if M._tpAntiDieHeartbeat then M._tpAntiDieHeartbeat:Disconnect(); M._tpAntiDieHeartbeat = nil end
+    if M._tpAntiDieCharConn then M._tpAntiDieCharConn:Disconnect(); M._tpAntiDieCharConn = nil end
+    local saved = M._tpAntiDieSaved
+    local hum = saved and saved.humanoid
+    if hum and hum.Parent then
+        pcall(function()
+            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, saved.deadEnabled ~= false)
+            hum.MaxHealth = saved.maxHealth or 100
+            hum.Health = math.min(saved.health or hum.MaxHealth, hum.MaxHealth)
+        end)
+    end
+    M._tpAntiDieSaved = nil
+end
+
 function M.startBatAimbot()
     if not M.safeModeTryStart() then return end
     if M.aimbotConn then
@@ -3707,6 +4051,7 @@ function M.startBatAimbot()
     M._aimbotLastScan = 0
     M._aimbotSwingCooldown = false
     M.autoBatEquippedThisRun = false
+    M.startTpAntiDie()
 
     -- ============================================================
     -- SCYTHE DUELS normal aimbot logic (exact)
@@ -3824,6 +4169,7 @@ function M.stopBatAimbot()
     M._aimbotSwingCooldown = false
     M.autoBatEnabled = false
     M.autoBatEquippedThisRun = false
+    M.stopTpAntiDie()
 
     local char = player.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -3949,6 +4295,7 @@ function M.startBatV2Aimbot()
     M.batV2Target = nil
     M.batV2LastScan = 0
     M.batV2HittingCooldown = false
+    M.startTpAntiDie()
 
     M.batV2Conn = RunService.Heartbeat:Connect(function()
         if not M.autoBatEnabled or not M.batV2Enabled then return end
@@ -4021,8 +4368,10 @@ end
 function M.stopBatV2Aimbot()
     if M.batV2Conn then pcall(function() M.batV2Conn:Disconnect() end); M.batV2Conn = nil end
     M.batV2Enabled = false
+    M.autoBatEnabled = false
     M.batV2Target = nil
     M.batV2HittingCooldown = false
+    M.stopTpAntiDie()
     local char = player.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
     if root then
@@ -5209,6 +5558,7 @@ end
 -- ============================================================
 M.jumpHeld = false
 M.infJumpThread = nil
+M._infJumpWatchdog = nil
 M._infJumpBoosting = false
 M._infJumpLastBoost = 0
 M.INF_JUMP_BOOST_FORCE = 25
@@ -5333,11 +5683,44 @@ function M.startHoldInfJump()
 end
 
 function M.stopHoldInfJump()
-    if M.holdInfJumpConn then
-        M.holdInfJumpConn:Disconnect()
+    if M.holdInfJumpConn then M.holdInfJumpConn:Disconnect()
         M.holdInfJumpConn = nil
     end
 end
+
+function M.startConfiguredInfJump()
+    if M.infJumpMode ~= "hold" then
+        M.infJumpMode = "manual"
+    end
+    if not M.infJumpEnabled then
+        M.stopManualInfJumpLoop()
+        M.stopHoldInfJump()
+        return false
+    end
+    M.stopManualInfJumpLoop()
+    M.stopHoldInfJump()
+    if M.infJumpMode == "hold" then
+        M.startHoldInfJump()
+    else
+        M.startManualInfJumpLoop()
+    end
+    return true
+end
+
+function M.startInfJumpWatchdog()
+    if M._infJumpWatchdog then
+        M._infJumpWatchdog:Disconnect()
+    end
+    M._infJumpWatchdog = RunService.Heartbeat:Connect(function()
+        if not M.infJumpEnabled then return end
+        local manualAlive = M.infJumpThread and M.infJumpThread.Connected
+        local holdAlive = M.holdInfJumpConn and M.holdInfJumpConn.Connected
+        if not manualAlive and not holdAlive then
+            M.startConfiguredInfJump()
+        end
+    end)
+end
+
 
 -- ============================================================
 function M.startUnwalk()
@@ -5462,69 +5845,40 @@ function M.toggleCarryMode()
 end
 
 function M.toggleLaggerMode()
-    if M.forceLaggerCarryWhileHolding() then
-        M.refreshSpeedModeLabel()
-        if M.mobBtnRefs.lagger then M.mobBtnRefs.lagger(false) end
-        if M.mobBtnRefs.laggerCarry then M.mobBtnRefs.laggerCarry(true) end
-        if M.laggerModeBtn then M.laggerModeBtn.Text = "Lag Off" end
-        if M.laggerCarryBtn then M.laggerCarryBtn.Text = "L.Carry On" end
-        saveCherryConfig()
-        return
-    end
-    M.laggerModeEnabled = not M.laggerModeEnabled
-    if M.laggerModeEnabled then
-        -- Lagger Speed takes priority and turns Carry off.
-        M.laggerCarryActive = false
-        M.carrySpeedActive = false
-    end
-    M.refreshSpeedModeLabel()
-    if M.mobBtnRefs.lagger then M.mobBtnRefs.lagger(M.laggerModeEnabled) end
-    if M.mobBtnRefs.laggerCarry then M.mobBtnRefs.laggerCarry(M.laggerCarryActive) end
-    if M.laggerModeBtn then
-        M.laggerModeBtn.Text = M.laggerModeEnabled and "Lag On" or "Lag Off"
-    end
-    if M.laggerCarryBtn then
-        M.laggerCarryBtn.Text = M.laggerCarryActive and "L.Carry On" or "L.Carry Off"
-    end
-    saveCherryConfig()
+    -- Botão e keybind usam o mesmo ciclo: Speed -> Lagger Carry -> Normal.
+    M.cycleLaggerModeBind()
 end
 
 function M.cycleLaggerModeBind()
-    -- A keybind funciona como um override temporário:
-    -- ativa Lagger por cima do modo atual e restaura esse modo ao desligar.
-    if not M.laggerModeEnabled then
-        M._laggerPreviousMode = {
-            carrySpeedActive = M.carrySpeedActive == true,
-            laggerCarryActive = M.laggerCarryActive == true,
-        }
-        M.carrySpeedActive = false
-        M.laggerCarryActive = false
-        M.laggerModeEnabled = true
+    -- Sequência exclusiva: Lagger Speed <-> Lagger Carry.
+    local state = tonumber(M._laggerCycleState)
+    if state ~= 1 and state ~= 2 then
+        state = M.laggerCarryActive and 2 or 1
     else
-        local previous = M._laggerPreviousMode or {
-            carrySpeedActive = false,
-            laggerCarryActive = false,
-        }
-        M.laggerModeEnabled = false
-        M.laggerCarryActive = previous.laggerCarryActive == true
-        M.carrySpeedActive = previous.carrySpeedActive == true
-        M._laggerPreviousMode = nil
+        state = (state == 1) and 2 or 1
     end
+    M._laggerCycleState = state
+
+    M.laggerModeEnabled = state == 1
+    M.laggerCarryActive = state == 2
+    -- O Carry normal não participa do ciclo do Lagger.
+    M.carrySpeedActive = false
 
     M.refreshSpeedModeLabel()
-    if M.mobBtnRefs.carrySpeed then M.mobBtnRefs.carrySpeed(M.carrySpeedActive) end
+    if M.mobBtnRefs.carrySpeed then M.mobBtnRefs.carrySpeed(false) end
     if M.mobBtnRefs.lagger then M.mobBtnRefs.lagger(M.laggerModeEnabled) end
     if M.mobBtnRefs.laggerCarry then M.mobBtnRefs.laggerCarry(M.laggerCarryActive) end
-    if M.carryModeBtn then M.carryModeBtn.Text = M.carrySpeedActive and "Carry On" or "Carry Off" end
+    if M.carryModeBtn then M.carryModeBtn.Text = "Carry Off" end
     if M.laggerModeBtn then M.laggerModeBtn.Text = M.laggerModeEnabled and "Lag On" or "Lag Off" end
     if M.laggerCarryBtn then M.laggerCarryBtn.Text = M.laggerCarryActive and "L.Carry On" or "L.Carry Off" end
 
-    -- O estado temporário não é salvo durante o Lagger ativo.
-    if not M.laggerModeEnabled then saveCherryConfig() end
+    saveCherryConfig()
 end
+
 
 function M.toggleLaggerCarry()
     M.laggerCarryActive = not M.laggerCarryActive
+    M._laggerCycleState = M.laggerCarryActive and 2 or 0
     if M.laggerCarryActive then
         M.laggerModeEnabled = false
         M.carrySpeedActive = false
@@ -6101,42 +6455,47 @@ function M.isStealState()
 end
 
 function M.getActiveMoveSpeed()
-    -- Auto Carry Speed: pick speed from steal state without forcing mode flags every frame
+    -- Prioridade: Lagger + Carry, somente Lagger, somente Carry, Normal.
     if M.autoSwitchSpeedEnabled then
         local isSteal = M.isStealState()
-        local inLagger = M.laggerModeEnabled or M.laggerCarryActive
-        if inLagger then
-            return isSteal and M.LAGGER_CARRY_SPEED or M.LAGGER_SPEED
-        end
-        return isSteal and M.CS or M.NS
+        local lagger = M.laggerModeEnabled == true
+        local laggerCarry = M.laggerCarryActive == true
+        local carry = M.carrySpeedActive == true or isSteal
+        if laggerCarry then return M.LAGGER_CARRY_SPEED end
+        if lagger and carry then return M.LAGGER_CARRY_SPEED end
+        if lagger then return M.LAGGER_SPEED end
+        if carry then return M.CS end
+        return M.NS
     end
 
-    -- Manual modes
-    if M.hasBrainrotInHand() then
-        return M.LAGGER_CARRY_SPEED
-    end
-    if M.laggerCarryActive then return M.LAGGER_CARRY_SPEED
-    elseif M.laggerModeEnabled then return M.LAGGER_SPEED
-    elseif M.carrySpeedActive then return M.CS
-    else return M.NS end
+    if M.hasBrainrotInHand() then return M.LAGGER_CARRY_SPEED end
+    if M.laggerModeEnabled and M.carrySpeedActive then return M.LAGGER_CARRY_SPEED end
+    if M.laggerCarryActive then return M.LAGGER_CARRY_SPEED end
+    if M.laggerModeEnabled then return M.LAGGER_SPEED end
+    if M.carrySpeedActive then return M.CS end
+    return M.NS
 end
 
 function M.getAutoPathSpeed(stealPhase)
-    -- Auto Play Full informa explicitamente quando entrou na etapa de roubo.
-    -- Fora dessa etapa, preserva a seleção normal do ONI.
-    if stealPhase then
-        if M.laggerModeEnabled or M.laggerCarryActive or M.hasBrainrotInHand() then
-            return math.clamp(tonumber(M.LAGGER_CARRY_SPEED) or 24.5, 1, 500)
-        end
-        return math.clamp(tonumber(M.CS) or 30, 1, 500)
+    local speed
+    if M.laggerCarryActive then
+        speed = M.LAGGER_CARRY_SPEED
+    elseif M.laggerModeEnabled and M.carrySpeedActive then
+        speed = M.LAGGER_CARRY_SPEED
+    elseif M.laggerModeEnabled then
+        speed = M.LAGGER_SPEED
+    elseif M.carrySpeedActive then
+        speed = M.CS
+    elseif stealPhase then
+        speed = M.CS
+    else
+        speed = M.NS
     end
-    if M.laggerModeEnabled or M.laggerCarryActive then
-        return math.clamp(tonumber(M.LAGGER_SPEED) or 15, 1, 500)
-    end
-    return math.clamp(tonumber(M.NS) or 60, 1, 500)
+    return math.clamp(tonumber(speed) or 0, 1, 500)
 end
 
 function M.setModeNormalFlags()
+    M._laggerCycleState = 0
     M.carrySpeedActive = false
     M.laggerModeEnabled = false
     M.laggerCarryActive = false
@@ -6150,6 +6509,7 @@ function M.setModeNormalFlags()
 end
 
 function M.setModeCarryFlags()
+    M._laggerCycleState = 0
     M.carrySpeedActive = true
     M.laggerModeEnabled = false
     M.laggerCarryActive = false
@@ -6163,6 +6523,7 @@ function M.setModeCarryFlags()
 end
 
 function M.setModeLaggerCarryFlags()
+    M._laggerCycleState = 2
     M.carrySpeedActive = false
     M.laggerModeEnabled = false
     M.laggerCarryActive = true
@@ -6968,7 +7329,7 @@ function M.makeNumberCallback(tbl,key,min,max)
         if max and v>max then return end
         tbl[key]=v
         if key=="mobileButtonsSize" and M.mobileButtonsEnabled then M.buildMobileButtons() end
-        if key=="stealBarSize" then M.buildStatusUI() end
+        if key=="stealBarSize" then M.buildMiroAutoStealUI() end
         saveCherryConfig()
     end
 end
@@ -8263,7 +8624,7 @@ function M.buildGui()
         if pg then local o=pg:FindFirstChild(n); if o then o:Destroy() end end
     end
 
-    M.buildStatusUI()
+    M.buildMiroAutoStealUI()
 
     local gui = Instance.new("ScreenGui")
     gui.Name = "OniHubUI"
@@ -9093,13 +9454,15 @@ function M.buildGui()
 
 
     local _, sbBox = uiNumberRow(PMech, "Steal Bar Size", M.stealBarSize, 100, 800, function(v)
-        M.stealBarSize = v; M.buildStatusUI()
+        M.stealBarSize = v; M.buildMiroAutoStealUI()
     end)
-    uiActionRow(PMech, "AUTO GRAB GUI -", function()
+    uiActionRow(PMech, "AUTO GRAB GUI −", function()
         M.adjustAutoGrabGuiScale(-0.1)
+        saveCherryConfig()
     end)
     uiActionRow(PMech, "AUTO GRAB GUI +", function()
         M.adjustAutoGrabGuiScale(0.1)
+        saveCherryConfig()
     end)
 
 
@@ -9685,7 +10048,7 @@ function M.resetAllSettings()
     M.laggerCarryActive = false
     M.antiRagdollEnabled = false
     M.antiRagdollMode = "Splatter"
-    M.infJumpEnabled = false
+    M.infJumpEnabled = true
     M.infJumpMode = "manual"
     M.medusaCounterEnabled = false
     M.batCounterEnabled = false
@@ -9789,10 +10152,6 @@ end)
 task.defer(function()
     if M.mobileButtonsEnabled then M.buildMobileButtons() end
     if M.antiRagdollEnabled then M.startAntiRagdoll() end
-    if M.infJumpEnabled then
-        if M.infJumpMode=="manual" then M.startManualInfJumpLoop()
-        elseif M.infJumpMode=="hold" then M.startHoldInfJump() end
-    end
     if M.medusaCounterEnabled then M.setupMedusa(player.Character) end
     if M.batCounterEnabled then M.startBatCounter() end
     if M.unwalkEnabled then M.startUnwalk() end
@@ -9827,10 +10186,10 @@ if M.headlessEnabled or M.korbloxEnabled then
 end
 
 M.CandyApplyCustomSky(M.currentSkyTheme)
-
 M.updateStatusRadius()
 
 if player.Character then
+
     M.setupHeadIndicator(player.Character)
     M.setupRagdollTriggers()
 end
@@ -9855,6 +10214,7 @@ player.CharacterAdded:Connect(function(char)
     if M.medusaCounterEnabled then M.setupMedusa(char) end
     if M.batCounterEnabled then M.startBatCounter() end
     if M.unwalkEnabled then task.wait(0.5); M.startUnwalk() end
+    if M.infJumpEnabled then M.startConfiguredInfJump() end
     if M.autoResetOnDeath then setupDeathReset() end
     if M.animPackEnabled and M.animPack and M.PACKS[M.animPack] then
         task.wait(0.2)
@@ -9872,23 +10232,53 @@ player.CharacterAdded:Connect(function(char)
     end
 end)
 
--- Lightweight no-collide (no GetDescendants every frame — avoids lag/ping spikes)
-do
-    local _ncAcc = 0
-    RunService.Heartbeat:Connect(function(dt)
-        _ncAcc = _ncAcc + dt
-        if _ncAcc < 0.35 then return end
-        _ncAcc = 0
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= player and p.Character then
-                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then hrp.CanCollide = false end
-                local head = p.Character:FindFirstChild("Head")
-                if head then head.CanCollide = false end
+-- NO COLLISION / REMOVE PHYSICS
+-- Aplica CanCollide=false a todas as partes dos outros personagens.
+function M.startNoCollision()
+    if M._noCollisionConnection then
+        M._noCollisionConnection:Disconnect()
+        M._noCollisionConnection = nil
+    end
+    M.noCollisionEnabled = true
+    M._noCollisionOriginals = {}
+
+    local elapsed = 0
+    M._noCollisionConnection = RunService.Heartbeat:Connect(function(dt)
+        if not M.noCollisionEnabled then return end
+        elapsed = elapsed + dt
+        if elapsed < 0.2 then return end
+        elapsed = 0
+
+        for _, targetPlayer in ipairs(Players:GetPlayers()) do
+            if targetPlayer ~= player and targetPlayer.Character then
+                for _, object in ipairs(targetPlayer.Character:GetDescendants()) do
+                    if object:IsA("BasePart") then
+                        if M._noCollisionOriginals[object] == nil then
+                            M._noCollisionOriginals[object] = object.CanCollide
+                        end
+                        pcall(function() object.CanCollide = false end)
+                    end
+                end
             end
         end
     end)
 end
+
+function M.stopNoCollision()
+    M.noCollisionEnabled = false
+    if M._noCollisionConnection then
+        M._noCollisionConnection:Disconnect()
+        M._noCollisionConnection = nil
+    end
+    for object, originalCanCollide in pairs(M._noCollisionOriginals) do
+        if object and object.Parent then
+            pcall(function() object.CanCollide = originalCanCollide end)
+        end
+    end
+    M._noCollisionOriginals = {}
+end
+
+M.startNoCollision()
 
 local function destroySpeedObjects()
     if M._anchoredBySpeed then pcall(function() M._anchoredBySpeed.Anchored = false end); M._anchoredBySpeed = nil end
@@ -10089,6 +10479,15 @@ end)
 function M.refreshSpeedModeLabel()
     -- not used
 end
+
+-- Ativação única depois de todo o ONI estar carregado.
+task.defer(function()
+    task.wait(1)
+    if M.infJumpEnabled then
+        M.startConfiguredInfJump()
+        M.startInfJumpWatchdog()
+    end
+end)
 
 pcall(function()
     M.refreshWalkSpeedAutoSwitch()
