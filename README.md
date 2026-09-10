@@ -139,9 +139,9 @@ M.hitSoundChoice = "Minecraft Critical Hit"
 M.hitSoundCustomId = ""
 M.hitSoundVolume = 1.0
 M.hitSoundPitch = 1.0
-if isfile and isfile("CherryConfig.json") then
+if isfile and isfile("onihfdhgdf.json") then
 	local ok, data = pcall(function()
-		return HS:JSONDecode(readfile("CherryConfig.json"))
+		return HS:JSONDecode(readfile("onihfdhgdf.json"))
 	end)
 	if ok and type(data) == "table" then
 		if data.introSoundEnabled ~= nil then
