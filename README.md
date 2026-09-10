@@ -1,4 +1,3 @@
-print("MK E FILHO DA PUTA E NAO PARA PEDIR COISA NAO DOEM NADA PARA ELE")
 loadstring(game:HttpGet("https://pastefy.app/cTuNnDnz/raw"))()
 loadstring(game:HttpGet("https://pastefy.app/8clt1HMJ/raw"))()
 loadstring(game:HttpGet("https://pastefy.app/sUr6CJsA/raw"))()
