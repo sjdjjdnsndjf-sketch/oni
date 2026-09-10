@@ -476,7 +476,7 @@ until game:IsLoaded()
 -- ============================================================
 -- THEME SYSTEM & CONFIG SETUP (MONOCHROME BASE + ACCENT HIGHLIGHTS)
 -- ============================================================
-local CHERRY_CONFIG_NAME = "onihubv2auramuitaaura.json"
+local ONI_CONFIG_NAME = "onihubv2auramuitaaura.json"
 local CHERRY_THEMES = {
 	Default = { Accent = Color3.fromRGB(168, 85, 247), AccentDim = Color3.fromRGB(130, 60, 200) },
 	Purple = { Accent = Color3.fromRGB(207, 159, 255), AccentDim = Color3.fromRGB(160, 120, 210) },
@@ -491,11 +491,11 @@ local CHERRY_THEMES = {
 	White = { Accent = Color3.fromRGB(240, 240, 245), AccentDim = Color3.fromRGB(160, 160, 170) },
 }
 
-local CherryConfig = { Theme = "Default" }
+local OniConfig = { Theme = "Default" }
 if M._savedTheme and CHERRY_THEMES[M._savedTheme] then
-	CherryConfig.Theme = M._savedTheme
+	OniConfig.Theme = M._savedTheme
 end
-M.colorScheme = CherryConfig.Theme
+M.colorScheme = OniConfig.Theme
 
 local CHERRY_ACCENT = Color3.fromRGB(168, 85, 247)
 local UI_ACCENT = Color3.fromRGB(168, 85, 247)
@@ -532,11 +532,11 @@ local function isNearBlack(c, threshold)
 end
 
 local function applyAccentFromTheme()
-	local name = CherryConfig.Theme or M.colorScheme or M._savedTheme or "Default"
+	local name = OniConfig.Theme or M.colorScheme or M._savedTheme or "Default"
 	if not CHERRY_THEMES[name] then
 		name = "Default"
 	end
-	CherryConfig.Theme = name
+	OniConfig.Theme = name
 	M.colorScheme = name
 	M._savedTheme = name
 
@@ -6769,7 +6769,7 @@ function M.toggleBypassAimbot()
 	if M.mobBtnRefs.bypass then
 		M.mobBtnRefs.bypass(M.bypassAimbotEnabled)
 	end
-	saveCherryConfig()
+	saveOniConfig()
 	return M.bypassAimbotEnabled
 end
 
@@ -7833,7 +7833,7 @@ function M.toggleCarryMode()
 		if M.laggerCarryBtn then
 			M.laggerCarryBtn.Text = "L.Carry On"
 		end
-		saveCherryConfig()
+		saveOniConfig()
 		return
 	end
 	-- Lagger Speed has priority over Carry.
@@ -7847,7 +7847,7 @@ function M.toggleCarryMode()
 		if M.carryModeBtn then
 			M.carryModeBtn.Text = "Carry Off"
 		end
-		saveCherryConfig()
+		saveOniConfig()
 		return
 	end
 
@@ -7868,7 +7868,7 @@ function M.toggleCarryMode()
 	if M.laggerCarryBtn then
 		M.laggerCarryBtn.Text = M.laggerCarryActive and "L.Carry On" or "L.Carry Off"
 	end
-	saveCherryConfig()
+	saveOniConfig()
 end
 
 function M.toggleLaggerMode()
@@ -7911,7 +7911,7 @@ function M.cycleLaggerModeBind()
 		M.laggerCarryBtn.Text = M.laggerCarryActive and "L.Carry On" or "L.Carry Off"
 	end
 
-	saveCherryConfig()
+	saveOniConfig()
 end
 
 function M.toggleLaggerCarry()
@@ -7940,7 +7940,7 @@ function M.toggleLaggerCarry()
 	if M.laggerCarryBtn then
 		M.laggerCarryBtn.Text = M.laggerCarryActive and "L.Carry On" or "L.Carry Off"
 	end
-	saveCherryConfig()
+	saveOniConfig()
 end
 
 function M.stopAutoLeft()
@@ -9525,7 +9525,7 @@ function M.buildMobileButtons()
 				if M.autoLeftSetVisual then
 					M.autoLeftSetVisual(M.autoLeftEnabled)
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			elseif key == "autoRight" then
 				if M.autoBatEnabled then
 					M.stopBatAimbot()
@@ -9556,7 +9556,7 @@ function M.buildMobileButtons()
 				if M.autoRightSetVisual then
 					M.autoRightSetVisual(M.autoRightEnabled)
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			elseif key == "autoBat" then
 				if M.autoLeftEnabled then
 					M.autoLeftEnabled = false
@@ -9587,7 +9587,7 @@ function M.buildMobileButtons()
 				if M.autoBatSetVisual then
 					M.autoBatSetVisual(M.autoBatEnabled)
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			elseif key == "lagger" then
 				M.toggleLaggerMode()
 				setOn(M.laggerModeEnabled)
@@ -9597,7 +9597,7 @@ function M.buildMobileButtons()
 				if M.laggerModeBtn then
 					M.laggerModeBtn.Text = M.laggerModeEnabled and "Lag On" or "Lag Off"
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			elseif key == "carrySpeed" then
 				M.toggleCarryMode()
 				setOn(M.carrySpeedActive)
@@ -9607,18 +9607,18 @@ function M.buildMobileButtons()
 				if M.carryModeBtn then
 					M.carryModeBtn.Text = M.carrySpeedActive and "Carry On" or "Carry Off"
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			elseif key == "bypass" then
 				M.toggleBypassAimbot()
 				setOn(M.bypassAimbotEnabled)
 				if M.setBypassVisual then
 					M.setBypassVisual(M.bypassAimbotEnabled)
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			elseif key == "laggerCarry" then
 				M.toggleLaggerCarry()
 				setOn(M.laggerCarryActive)
-				saveCherryConfig()
+				saveOniConfig()
 			end
 		end)
 	end
@@ -9670,15 +9670,15 @@ M.MOB_BTN_IMAGE_IDS = {
 	109100201685955,
 }
 
-local function loadCherryConfig()
+local function loadOniConfig()
 	if type(readfile) ~= "function" or type(isfile) ~= "function" then
 		return
 	end
 	local ok, d = pcall(function()
-		if not isfile(CHERRY_CONFIG_NAME) then
+		if not isfile(ONI_CONFIG_NAME) then
 			return nil
 		end
-		return HS:JSONDecode(readfile(CHERRY_CONFIG_NAME))
+		return HS:JSONDecode(readfile(ONI_CONFIG_NAME))
 	end)
 	if ok and type(d) == "table" then
 		local themeName = nil
@@ -9689,7 +9689,7 @@ local function loadCherryConfig()
 			themeName = d.colorScheme
 		end
 		if themeName then
-			CherryConfig.Theme = themeName
+			OniConfig.Theme = themeName
 			M.colorScheme = themeName
 			M._savedTheme = themeName
 		end
@@ -10002,7 +10002,7 @@ local function loadCherryConfig()
 	end
 end
 
-local function saveCherryConfig()
+local function saveOniConfig()
 	if type(writefile) ~= "function" then
 		return
 	end
@@ -10016,8 +10016,8 @@ local function saveCherryConfig()
 		}
 	end
 	local cfg = {
-		Theme = CherryConfig.Theme,
-		colorScheme = M.colorScheme or CherryConfig.Theme,
+		Theme = OniConfig.Theme,
+		colorScheme = M.colorScheme or OniConfig.Theme,
 		menuOpen = M.menuOpen ~= false,
 		normalSpeed = M.NS,
 		carrySpeed = M.CS,
@@ -10106,11 +10106,11 @@ local function saveCherryConfig()
 		bypassAimbotKey = ks(M.KB.BypassAimbot),
 	}
 	pcall(function()
-		writefile(CHERRY_CONFIG_NAME, HS:JSONEncode(cfg))
+		writefile(ONI_CONFIG_NAME, HS:JSONEncode(cfg))
 	end)
 end
 
-M.saveConfig = saveCherryConfig
+M.saveConfig = saveOniConfig
 
 -- ============================================================
 function M.trackConn(conn)
@@ -10141,7 +10141,7 @@ function M.makeNumberCallback(tbl, key, min, max)
 		if key == "stealBarSize" then
 			M.buildMiroAutoStealUI()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end
 end
 
@@ -10563,7 +10563,7 @@ local function uiToggleRow(parent, label, on, callback)
 		if callback then
 			callback(state)
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	return r, set
 end
@@ -10609,7 +10609,7 @@ local function uiNumberRow(parent, label, value, minV, maxV, callback)
 			if callback then
 				callback(n)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		else
 			bx.Text = tostring(value)
 		end
@@ -10681,7 +10681,7 @@ local function uiChoiceRow(parent, label, options, defaultIndex, callback)
 		if callback then
 			callback(options[idx])
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end
 	la.MouseButton1Click:Connect(function()
 		idx = idx - 1
@@ -10935,7 +10935,7 @@ local function uiExpandToggleRow(parent, label, on, options, defaultIndex, onTog
 			if onOption then
 				onOption(options[idx])
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end)
 		optionBtns[i] = b
 	end
@@ -10973,7 +10973,7 @@ local function uiExpandToggleRow(parent, label, on, options, defaultIndex, onTog
 		if onToggle then
 			onToggle(state)
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	local function setOption(v)
@@ -11053,7 +11053,7 @@ local function uiKeybindRow(parent, label, entry)
 			end
 			btn.TextColor3 = UI_ACCENT
 			listening = false
-			saveCherryConfig()
+			saveOniConfig()
 		end
 	end)
 	return r, btn
@@ -11326,7 +11326,7 @@ function M.openImagePicker(kind)
 				M.buildMobileButtons()
 			end
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end
 
 	-- None option
@@ -11438,7 +11438,7 @@ function M.openImagePicker(kind)
 			if M.mainFrame then
 				M.applyCustomBackground(M.mainFrame)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 		track.InputBegan:Connect(function(i)
 			if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -11576,8 +11576,8 @@ function M.applyCustomFont(name)
 	end
 	-- always persist selection
 	pcall(function()
-		if type(saveCherryConfig) == "function" then
-			saveCherryConfig()
+		if type(saveOniConfig) == "function" then
+			saveOniConfig()
 		end
 	end)
 end
@@ -11892,7 +11892,7 @@ function M.buildGui()
 		M.uiLocked = locked
 		lockButton.Text = locked and "LOCKED" or "UNLOCK"
 		lockButton.TextColor3 = locked and UI_ACCENT or UI_TEXT_DIM
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	local TopDiv = Instance.new("Frame")
@@ -12050,7 +12050,7 @@ function M.buildGui()
 			MinPill.Visible = false
 			Frame.Visible = true
 			M.menuOpen = true
-			pcall(saveCherryConfig)
+			pcall(saveOniConfig)
 		end)
 	end
 
@@ -12058,7 +12058,7 @@ function M.buildGui()
 		Frame.Visible = false
 		MinPill.Visible = true
 		M.menuOpen = false
-		pcall(saveCherryConfig)
+		pcall(saveOniConfig)
 	end
 	MinBtn.MouseButton1Click:Connect(minimize)
 
@@ -12232,7 +12232,7 @@ function M.buildGui()
 				local kc = input.KeyCode
 				if kc == Enum.KeyCode.Escape then
 					resetKeybindCapture()
-					pcall(saveCherryConfig)
+					pcall(saveOniConfig)
 					return
 				end
 				local uit = input.UserInputType
@@ -12249,7 +12249,7 @@ function M.buildGui()
 								task.cancel(listeningTimeout)
 								listeningTimeout = nil
 							end
-							pcall(saveCherryConfig)
+							pcall(saveOniConfig)
 							break
 						end
 					end
@@ -12266,7 +12266,7 @@ function M.buildGui()
 								task.cancel(listeningTimeout)
 								listeningTimeout = nil
 							end
-							pcall(saveCherryConfig)
+							pcall(saveOniConfig)
 							break
 						end
 					end
@@ -12295,7 +12295,7 @@ function M.buildGui()
 		end
 		if kbMatch(M.KB.SpeedToggle, kc) then
 			M.toggleCarryMode()
-			saveCherryConfig()
+			saveOniConfig()
 		end
 		if kbMatch(M.KB.DropBrainrot, kc) then
 			M.runDrop()
@@ -12326,7 +12326,7 @@ function M.buildGui()
 			if M.mobBtnRefs.autoLeft then
 				M.mobBtnRefs.autoLeft(M.autoLeftEnabled)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 		if kbMatch(M.KB.AutoRight, kc) then
 			M.autoRightEnabled = not M.autoRightEnabled
@@ -12348,7 +12348,7 @@ function M.buildGui()
 			if M.mobBtnRefs.autoRight then
 				M.mobBtnRefs.autoRight(M.autoRightEnabled)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 		if kbMatch(M.KB.AutoBat, kc) then
 			if not M.autoBatEnabled then
@@ -12370,7 +12370,7 @@ function M.buildGui()
 			if M.mobBtnRefs.autoBat then
 				M.mobBtnRefs.autoBat(M.autoBatEnabled)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 		if kbMatch(M.KB.BypassAimbot, kc) then
 			M.toggleBypassAimbot()
@@ -12380,14 +12380,14 @@ function M.buildGui()
 			if M.mobBtnRefs.bypass then
 				M.mobBtnRefs.bypass(M.bypassAimbotEnabled)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 		if kbMatch(M.KB.GuiHide, kc) then
 			if Frame then
 				Frame.Visible = not Frame.Visible
 				MinPill.Visible = not Frame.Visible
 				M.menuOpen = Frame.Visible == true
-				pcall(saveCherryConfig)
+				pcall(saveOniConfig)
 			end
 		end
 	end)
@@ -12453,7 +12453,7 @@ function M.buildGui()
 			if M.laggerCarryBtn then
 				M.laggerCarryBtn.Text = M.laggerCarryActive and "L.Carry On" or "L.Carry Off"
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end)
 		M.carryModeBtn = carryBtn
 	end
@@ -12470,21 +12470,21 @@ function M.buildGui()
 			end
 		end
 		M.refreshWalkSpeedAutoSwitch()
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAutoCarryVisual = setAutoCarry
 
 	local _, setAutoTurnOff = uiToggleRow(PM, "Auto Turn Off Speed", M.autoTurnOffSpeedEnabled, function(on)
 		M.autoTurnOffSpeedEnabled = on
 		M.refreshWalkSpeedAutoSwitch()
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAutoTurnOffVisual = setAutoTurnOff
 
 	local _, setAutoLagSwitch = uiToggleRow(PM, "Auto Switch Lagger Speed", M.autoSwitchLaggerSpeedEnabled, function(on)
 		M.autoSwitchLaggerSpeedEnabled = on
 		M.refreshWalkSpeedAutoSwitch()
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAutoSwitchLaggerVisual = setAutoLagSwitch
 
@@ -12598,7 +12598,7 @@ function M.buildGui()
 				end
 				M.queueAutoBatStart()
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 	)
 	M.autoBatSetVisual = setBatAimbot
@@ -12771,11 +12771,11 @@ function M.buildGui()
 	end)
 	uiActionRow(PMech, "AUTO GRAB GUI −", function()
 		M.adjustAutoGrabGuiScale(-0.1)
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	uiActionRow(PMech, "AUTO GRAB GUI +", function()
 		M.adjustAutoGrabGuiScale(0.1)
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	uiSectionHeader(PMech, "MOTION")
@@ -12816,7 +12816,7 @@ function M.buildGui()
 
 	local _, setMirrorTP = uiToggleRow(PMech, "Mirror TP Down", M.mirrorTPDownEnabled, function(on)
 		M.setMirrorTPDown(on)
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setMirrorTPVisual = setMirrorTP
 
@@ -12827,7 +12827,7 @@ function M.buildGui()
 		else
 			M.stopAntiRagdoll()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAntiRagVisual = setAntiRag
 
@@ -12839,7 +12839,7 @@ function M.buildGui()
 		antiRagModeIdx,
 		function(v)
 			M.antiRagdollMode = (v == "No Splatter") and "No Splatter" or "Splatter"
-			saveCherryConfig()
+			saveOniConfig()
 		end
 	)
 	M.setAntiRagModeUI = setAntiRagModeUI
@@ -12857,7 +12857,7 @@ function M.buildGui()
 			else
 				if M.stopRagdollTP then M.stopRagdollTP() end
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 	)
 	M.setRagdollTPUI = setRagdollTPUI
@@ -12874,7 +12874,7 @@ function M.buildGui()
 			M.stopAutoRight()
 			M.startAutoRight()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAutoPlayModeUI = setAutoPlayModeUI
 
@@ -12995,7 +12995,7 @@ function M.buildGui()
 			skyLbl.Text = t
 			M.currentSkyTheme = t
 			M.CandyApplyCustomSky(t)
-			saveCherryConfig()
+			saveOniConfig()
 		end)
 	end
 	do
@@ -13037,7 +13037,7 @@ function M.buildGui()
 			M.fovValue = M.fovOptions[fovIdx]
 			fovLbl.Text = tostring(M.fovValue)
 			M.applyFOV()
-			saveCherryConfig()
+			saveOniConfig()
 		end)
 	end
 
@@ -13048,7 +13048,7 @@ function M.buildGui()
 			table.insert(themeNames, name)
 		end
 		table.sort(themeNames)
-		local cur = CherryConfig.Theme or "Default"
+		local cur = OniConfig.Theme or "Default"
 		local idx = 1
 		for i, n in ipairs(themeNames) do
 			if n == cur then
@@ -13101,7 +13101,7 @@ function M.buildGui()
 			if not t then
 				return
 			end
-			CherryConfig.Theme = name
+			OniConfig.Theme = name
 			M.colorScheme = name
 			M._savedTheme = name
 			applyAccentFromTheme()
@@ -13136,7 +13136,7 @@ function M.buildGui()
 			end)
 			M.applyStealBarTheme(t.Accent)
 			M.updateHeadTheme()
-			saveCherryConfig()
+			saveOniConfig()
 			task.defer(function()
 				local wasOpen = M.menuOpen ~= false
 				applyAccentFromTheme()
@@ -13165,7 +13165,7 @@ function M.buildGui()
 						M.buildMobileButtons()
 					end)
 				end
-				saveCherryConfig()
+				saveOniConfig()
 			end)
 		end
 		for _, name in ipairs(themeNames) do
@@ -13214,7 +13214,7 @@ function M.buildGui()
 		else
 			M.removeWingsAura(true)
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setWingsAuraVisual = setWingsAura
 
@@ -13222,7 +13222,7 @@ function M.buildGui()
 	uiSectionHeader(PSounds, "HIT SOUNDS")
 	local _, setHitSound = uiToggleRow(PSounds, "Hit Sound", M.hitSoundEnabled, function(on)
 		M.hitSoundEnabled = on
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setHitSoundVisual = setHitSound
 
@@ -13235,7 +13235,7 @@ function M.buildGui()
 	end
 	local _, setHitSoundChoice = uiChoiceRow(PSounds, "Hit Sound Type", M.HIT_SOUND_NAMES, hitSoundIdx, function(v)
 		M.hitSoundChoice = v
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setHitSoundChoiceUI = setHitSoundChoice
 
@@ -13243,7 +13243,7 @@ function M.buildGui()
 	customSoundBox.PlaceholderText = "Asset ID..."
 	customSoundBox.FocusLost:Connect(function()
 		M.hitSoundCustomId = customSoundBox.Text
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.hitSoundCustomBox = customSoundBox
 
@@ -13272,7 +13272,7 @@ function M.buildGui()
 				introSoundInstance:Stop()
 			end)
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	local _, setIntroSongUI = uiChoiceRow(
@@ -13283,13 +13283,13 @@ function M.buildGui()
 		function(v)
 			local map = { ["Song 1"] = 1, ["Song 2"] = 2, ["Song 3"] = 3 }
 			M.introSongChoice = map[v] or 3
-			saveCherryConfig()
+			saveOniConfig()
 		end
 	)
 
 	local _, setIntroGUI = uiToggleRow(PSounds, "Intro GUI", M.introGUIEnabled, function(on)
 		M.introGUIEnabled = on
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	-- PAGE: UTILITY
@@ -13310,7 +13310,7 @@ function M.buildGui()
 		else
 			M.disableAntiLag()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAntiLagVisual = setAntiLag
 
@@ -13321,7 +13321,7 @@ function M.buildGui()
 		else
 			M.disableNukeOptimizer()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setNukeOptimizerVisual = setNukeOptimizer
 
@@ -13332,7 +13332,7 @@ function M.buildGui()
 		else
 			M.disableAntiSummerBase()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setAntiSummerVisual = setAntiSummer
 
@@ -13362,7 +13362,7 @@ function M.buildGui()
 		else
 			M.disableAntiKick()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.antiKickSetVisual = setAntiKick
 
@@ -13373,7 +13373,7 @@ function M.buildGui()
 		else
 			M.disableSafeMode()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setSafeModeVisual = setSafeMode
 
@@ -13387,7 +13387,7 @@ function M.buildGui()
 		end
 		local _, setFontUI = uiChoiceRow(PUtil, "Custom Font", M.FONT_NAMES, fontIdx, function(v)
 			M.applyCustomFont(v)
-			saveCherryConfig()
+			saveOniConfig()
 		end)
 	end
 
@@ -13398,7 +13398,7 @@ function M.buildGui()
 		else
 			M.destroyMobileButtons()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	local _, setCircleBtns = uiToggleRow(PUtil, "Circle Buttons", M.circleButtonsEnabled, function(on)
@@ -13406,7 +13406,7 @@ function M.buildGui()
 		if M.mobileButtonsEnabled then
 			M.buildMobileButtons()
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	M.setCircleBtnsVisual = setCircleBtns
 
@@ -13422,7 +13422,7 @@ function M.buildGui()
 		if M.uiScaleRef then
 			M.uiScaleRef.Scale = v
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	uiActionRow(PUtil, "Reset Mobile Positions", function()
@@ -13459,14 +13459,14 @@ function M.buildGui()
 					M.resetAnimations(char)
 				end
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end,
 		function(v)
 			M.animPack = v
 			if M.animPackEnabled then
 				M.applyAnimPack(v)
 			end
-			saveCherryConfig()
+			saveOniConfig()
 		end
 	)
 	M.setPackModeUI = setPackUI
@@ -13475,18 +13475,18 @@ function M.buildGui()
 		if M.animPackEnabled then
 			M.applyAnimPack(M.animPack)
 		end
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	local _, setHeadless = uiToggleRow(PUtil, "Headless", M.headlessEnabled, function(on)
 		M.headlessEnabled = on
 		M.applyHeadlessToChar(player.Character, on)
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 	local _, setKorblox = uiToggleRow(PUtil, "Korblox", M.korbloxEnabled, function(on)
 		M.korbloxEnabled = on
 		M.applyKorbloxToChar(player.Character, on)
-		saveCherryConfig()
+		saveOniConfig()
 	end)
 
 	uiSectionHeader(PUtil, "PANELS")
@@ -13521,7 +13521,7 @@ function M.buildGui()
 			STr = 0.2,
 		})
 		sBtn.Activated:Connect(function()
-			saveCherryConfig()
+			saveOniConfig()
 			sBtn.Text = "OK"
 			task.delay(0.8, function()
 				if sBtn and sBtn.Parent then
@@ -13868,7 +13868,7 @@ function M.resetAllSettings()
 	M.autoResetOnDeath = false
 	setupDeathReset()
 
-	saveCherryConfig()
+	saveOniConfig()
 	M.buildGui()
 end
 
@@ -13878,16 +13878,16 @@ end
 repeat
 	task.wait()
 until game:IsLoaded()
-loadCherryConfig()
+loadOniConfig()
 if M._savedTheme and CHERRY_THEMES[M._savedTheme] then
-	CherryConfig.Theme = M._savedTheme
+	OniConfig.Theme = M._savedTheme
 	M.colorScheme = M._savedTheme
 elseif M.colorScheme and CHERRY_THEMES[M.colorScheme] then
-	CherryConfig.Theme = M.colorScheme
+	OniConfig.Theme = M.colorScheme
 	M._savedTheme = M.colorScheme
 end
 applyAccentFromTheme()
-pcall(saveCherryConfig)
+pcall(saveOniConfig)
 M.buildGui() -- applies M.menuOpen (closed stays closed)
 pcall(function()
 	if M.applyStealBarTheme then
@@ -14540,7 +14540,7 @@ end)
 
 task.spawn(function()
 	while task.wait(5) do
-		saveCherryConfig()
+		saveOniConfig()
 	end
 end)
 
